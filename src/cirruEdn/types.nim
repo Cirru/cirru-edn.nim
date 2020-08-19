@@ -10,6 +10,7 @@ type
     crEdnBool,
     crEdnNumber,
     crEdnString,
+    crEdnKeyword,
     crEdnVector,
     crEdnSeq,
     crEdnTable,
@@ -19,14 +20,18 @@ type
 
   CirruEdnValue* = object
     case kind*: CirruEdnKind
-    of crEdnNil: nilVal: bool
+    of crEdnNil: discard
     of crEdnBool: boolVal*: bool
     of crEdnNumber: numberVal*: float
     of crEdnString: stringVal*: string
+    of crEdnKeyword: keywordVal*: string
     of crEdnFn: fnVal*: proc()
     of crEdnVector: arrayVal*: seq[CirruEdnValue]
     of crEdnTable: tableVal*: Table[Hash, TablePair]
     else: xVal*: string
+
+  EdnEmptyError* = object of Exception
+  EdnInvalidError* = object of Exception
 
 proc toString*(val: CirruEdnValue): string
 
