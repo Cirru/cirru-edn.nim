@@ -38,11 +38,29 @@ proc hash*(value: CirruEdnValue): Hash =
       return hash("nil:")
     of crEdnBool:
       return hash("bool:" & $(value.boolVal))
+    of crEdnKeyword:
+      return hash("keyword:" & value.keywordVal)
+    of crEdnFn:
+      result =  hash("fn:")
+      result = result !& hash(value.fnVal)
+      result = !$ result
     of crEdnVector:
-      return hash("TODO")
-    else:
-      # TODO
-      return hash("TODO")
+      result = hash("vector:")
+      for idx, x in value.vectorVal:
+        result = result !& hash(x)
+      result = !$ result
+    of crEdnList:
+      result = hash("list:")
+      for idx, x in value.listVal:
+        result = result !& hash(x)
+      result = !$ result
+    of crEdnMap:
+      result = hash("map:")
+      for k, v in value.mapVal.pairs:
+        result = result !& hash(k)
+        result = result !& hash(v)
+
+      result = !$ result
 
 proc `==`*(x, y: CirruEdnValue): bool =
   if x.kind != y.kind:
@@ -83,7 +101,10 @@ proc `==`*(x, y: CirruEdnValue): bool =
       if x.mapVal.len != y.mapVal.len:
         return false
 
-      echo "TODO compare map"
+      for k, v in x.mapVal.pairs:
+        if not (y.mapVal.hasKey(k) and y.mapVal[k] == v):
+          return false
+
       return true
 
 proc `!=`*(x, y: CirruEdnValue): bool =
