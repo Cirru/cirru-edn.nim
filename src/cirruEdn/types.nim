@@ -1,5 +1,5 @@
 import strutils
-import sequtils, sugar
+import sequtils
 import tables
 import hashes
 import strformat
@@ -10,37 +10,42 @@ type
     crEdnBool,
     crEdnNumber,
     crEdnString,
+    crEdnKeyword,
     crEdnVector,
-    crEdnSeq,
-    crEdnTable,
+    crEdnList,
+    crEdnMap,
     crEdnFn
-
-  TablePair* = tuple[key: CirruEdnValue, value: CirruEdnValue]
 
   CirruEdnValue* = object
     case kind*: CirruEdnKind
-    of crEdnNil: nilVal: bool
+    of crEdnNil: discard
     of crEdnBool: boolVal*: bool
     of crEdnNumber: numberVal*: float
     of crEdnString: stringVal*: string
+    of crEdnKeyword: keywordVal*: string
     of crEdnFn: fnVal*: proc()
-    of crEdnVector: arrayVal*: seq[CirruEdnValue]
-    of crEdnTable: tableVal*: Table[Hash, TablePair]
-    else: xVal*: string
+    of crEdnVector: vectorVal*: seq[CirruEdnValue]
+    of crEdnList: listVal*: seq[CirruEdnValue]
+    of crEdnMap: mapVal*: Table[CirruEdnValue, CirruEdnValue]
+
+  EdnEmptyError* = object of ValueError
+  EdnInvalidError* = object of ValueError
 
 proc toString*(val: CirruEdnValue): string
 
 proc fromArrayToString(children: seq[CirruEdnValue]): string =
   return "[" & children.mapIt(toString(it)).join(" ") & "]"
 
-proc fromTableToString(children: Table[Hash, TablePair]): string =
+proc fromSeqToString(children: seq[CirruEdnValue]): string =
+  return "(" & children.mapIt(toString(it)).join(" ") & ")"
+
+proc fromTableToString(children: Table[CirruEdnValue, CirruEdnValue]): string =
   let size = children.len()
   if size > 20:
     return "{...(20)...}"
   var tableStr = "{"
   for k, child in pairs(children):
-    # TODO, need a way to get original key
-    tableStr = tableStr & toString(child.key) & " " & toString(child.value) & ", "
+    tableStr = tableStr & toString(k) & " " & toString(child) & ", "
   tableStr = tableStr & "}"
   return tableStr
 
@@ -53,8 +58,9 @@ proc toString*(val: CirruEdnValue): string =
         "false"
     of crEdnNumber: $(val.numberVal)
     of crEdnString: escape(val.stringVal)
-    of crEdnVector: fromArrayToString(val.arrayVal)
-    of crEdnTable: fromTableToString(val.tableVal)
+    of crEdnVector: fromArrayToString(val.vectorVal)
+    of crEdnList: fromSeqToString(val.listVal)
+    of crEdnMap: fromTableToString(val.mapVal)
     else: "::CirruEdnValue::"
 
 proc hashCirruEdnValue*(value: CirruEdnValue): Hash =
