@@ -26,9 +26,9 @@ type
     of crEdnString: stringVal*: string
     of crEdnKeyword: keywordVal*: string
     of crEdnFn: fnVal*: proc()
-    of crEdnVector: arrayVal*: seq[CirruEdnValue]
+    of crEdnVector: vectorVal*: seq[CirruEdnValue]
+    of crEdnSeq: seqVal*: seq[CirruEdnValue]
     of crEdnTable: tableVal*: Table[Hash, TablePair]
-    else: xVal*: string
 
   EdnEmptyError* = object of Exception
   EdnInvalidError* = object of Exception
@@ -37,6 +37,9 @@ proc toString*(val: CirruEdnValue): string
 
 proc fromArrayToString(children: seq[CirruEdnValue]): string =
   return "[" & children.mapIt(toString(it)).join(" ") & "]"
+
+proc fromSeqToString(children: seq[CirruEdnValue]): string =
+  return "(" & children.mapIt(toString(it)).join(" ") & ")"
 
 proc fromTableToString(children: Table[Hash, TablePair]): string =
   let size = children.len()
@@ -58,7 +61,8 @@ proc toString*(val: CirruEdnValue): string =
         "false"
     of crEdnNumber: $(val.numberVal)
     of crEdnString: escape(val.stringVal)
-    of crEdnVector: fromArrayToString(val.arrayVal)
+    of crEdnVector: fromArrayToString(val.vectorVal)
+    of crEdnSeq: fromSeqToString(val.seqVal)
     of crEdnTable: fromTableToString(val.tableVal)
     else: "::CirruEdnValue::"
 

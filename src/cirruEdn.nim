@@ -2,8 +2,11 @@
 import cirruParser
 import cirruEdn/types
 import re
+import strutils
+import sequtils
 
 proc mapExpr(tree: CirruNode): CirruEdnValue =
+
   case tree.kind:
   of cirruString:
     case tree.text:
@@ -17,19 +20,30 @@ proc mapExpr(tree: CirruNode): CirruEdnValue =
       if tree.text == "":
         raise newException(EdnEmptyError, "\"\" is not valid data ")
       elif tree.text[0] == ':':
-        return CirruEdnValue(kind: crEdnKeyword, keywordVal: tree.text[1..^0])
+        return CirruEdnValue(kind: crEdnKeyword, keywordVal: tree.text[1..tree.text.high])
       elif tree.text[0] == '|':
-        return CirruEdnValue(kind: crEdnString, stringVal: tree.text[1..^0])
+        return CirruEdnValue(kind: crEdnString, stringVal: tree.text[1..tree.text.high])
       elif tree.text[0] == '"':
-        return CirruEdnValue(kind: crEdnString, stringVal: tree.text[1..^0])
-      elif match($(tree.text[0]), re"\d"):
-        echo "TODO number"
-        return CirruEdnValue(kind: crEdnNumber, numberVal: 0)
+        return CirruEdnValue(kind: crEdnString, stringVal: tree.text[1..tree.text.high])
+      elif match($(tree.text[0]), re"\d+(.\d+)?"):
+        return CirruEdnValue(kind: crEdnNumber, numberVal: parseFloat(tree.text))
       else:
         echo tree.text
         raise newException(EdnInvalidError, "Unknown data")
   of cirruSeq:
-    return CirruEdnValue(kind: crEdnString, stringVal: "TODO Seq")
+    if tree.list.len == 0:
+      raise newException(EdnInvalidError, "[] is not a valid expression")
+    let firstNode = tree.list[0]
+    if firstNode.kind == cirruSeq:
+      raise newException(EdnInvalidError, "nested expr is not supported as operator")
+    case firstNode.text:
+      of "[]":
+        let body: seq[CirruNode] = tree.list[1..tree.list.high]
+        return CirruEdnValue(kind: crEdnVector, vectorVal: body.map(mapExpr))
+      of "list":
+        return CirruEdnValue(kind: crEdnString, stringVal: "TODO Seq")
+      of "{}":
+        return CirruEdnValue(kind: crEdnString, stringVal: "TODO Seq")
 
 proc parseEdnFromStr*(code: string): CirruEdnValue =
   let tree = parseCirru code
@@ -80,11 +94,21 @@ proc `==`*(x, y: CirruEdnValue): bool =
     of crEdnKeyword:
       return x.keywordVal == y.keywordVal
     of crEdnVector:
-      echo "TODO compare"
+      if x.vectorVal.len != y.vectorVal.len:
+        return false
+      for idx, xi in x.vectorVal:
+        if xi != y.vectorVal[idx]:
+          return false
       return true
+
     of crEdnSeq:
-      echo "TODO compare"
+      if x.seqVal.len != y.seqVal.len:
+        return false
+      for idx, xi in x.seqVal:
+        if xi != y.seqVal[idx]:
+          return false
       return true
+
     of crEdnFn:
       echo "TODO compare"
       return true
