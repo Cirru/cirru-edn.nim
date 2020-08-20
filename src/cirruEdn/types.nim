@@ -1,8 +1,5 @@
-import strutils
-import sequtils
 import tables
 import hashes
-import strformat
 
 type
   CirruEdnKind* = enum
@@ -31,52 +28,63 @@ type
   EdnEmptyError* = object of ValueError
   EdnInvalidError* = object of ValueError
 
-proc toString*(val: CirruEdnValue): string
-
-proc fromArrayToString(children: seq[CirruEdnValue]): string =
-  return "[" & children.mapIt(toString(it)).join(" ") & "]"
-
-proc fromSeqToString(children: seq[CirruEdnValue]): string =
-  return "(" & children.mapIt(toString(it)).join(" ") & ")"
-
-proc fromTableToString(children: Table[CirruEdnValue, CirruEdnValue]): string =
-  let size = children.len()
-  if size > 20:
-    return "{...(20)...}"
-  var tableStr = "{"
-  for k, child in pairs(children):
-    tableStr = tableStr & toString(k) & " " & toString(child) & ", "
-  tableStr = tableStr & "}"
-  return tableStr
-
-proc toString*(val: CirruEdnValue): string =
-  case val.kind:
-    of crEdnBool:
-      if val.boolVal:
-        "true"
-      else:
-        "false"
-    of crEdnNumber: $(val.numberVal)
-    of crEdnString: escape(val.stringVal)
-    of crEdnVector: fromArrayToString(val.vectorVal)
-    of crEdnList: fromSeqToString(val.listVal)
-    of crEdnMap: fromTableToString(val.mapVal)
-    else: "::CirruEdnValue::"
-
-proc hashCirruEdnValue*(value: CirruEdnValue): Hash =
+proc hash*(value: CirruEdnValue): Hash =
   case value.kind
     of crEdnNumber:
-      return hash(value.numberVal)
+      return hash("number:" & $value.numberVal)
     of crEdnString:
-      return hash(value.stringVal)
+      return hash("string:" & value.stringVal)
     of crEdnNil:
-      # TODO not safe enough
-      return hash("")
+      return hash("nil:")
     of crEdnBool:
-      # TODO not safe enough
-      return hash(fmt"{value.boolVal}")
+      return hash("bool:" & $(value.boolVal))
     of crEdnVector:
       return hash("TODO")
     else:
       # TODO
       return hash("TODO")
+
+proc `==`*(x, y: CirruEdnValue): bool =
+  if x.kind != y.kind:
+    return false
+  else:
+    case x.kind:
+    of crEdnNil:
+      return true
+    of crEdnBool:
+      return x.boolVal == y.boolVal
+    of crEdnString:
+      return x.stringVal == y.stringVal
+    of crEdnNumber:
+      return x.numberVal == y.numberVal
+    of crEdnKeyword:
+      return x.keywordVal == y.keywordVal
+    of crEdnFn:
+      return x.fnVal == y.fnVal
+
+    of crEdnVector:
+      if x.vectorVal.len != y.vectorVal.len:
+        return false
+      for idx, xi in x.vectorVal:
+        if xi != y.vectorVal[idx]:
+          return false
+      return true
+
+    of crEdnList:
+      if x.listVal.len != y.listVal.len:
+        return false
+
+      for idx, xi in x.listVal:
+        if xi != y.listVal[idx]:
+          return false
+      return true
+
+    of crEdnMap:
+      if x.mapVal.len != y.mapVal.len:
+        return false
+
+      echo "TODO compare map"
+      return true
+
+proc `!=`*(x, y: CirruEdnValue): bool =
+  not (x == y)
