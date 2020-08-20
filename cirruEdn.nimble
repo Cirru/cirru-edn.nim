@@ -14,4 +14,4 @@ requires "nim >= 1.2.6"
 requires "cirru-parser >= 0.0.5"
 
 task t, "Runs the test suite":
-  exec "nim c -r tests/testEdn.nim"
+  exec "nim c  --hints:off -r tests/testEdn.nim"

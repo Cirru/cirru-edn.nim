@@ -4,6 +4,7 @@ import cirruEdn/types
 import re
 import strutils
 import sequtils
+import tables
 
 proc mapExpr(tree: CirruNode): CirruEdnValue =
 
@@ -41,9 +42,9 @@ proc mapExpr(tree: CirruNode): CirruEdnValue =
         let body: seq[CirruNode] = tree.list[1..tree.list.high]
         return CirruEdnValue(kind: crEdnVector, vectorVal: body.map(mapExpr))
       of "list":
-        return CirruEdnValue(kind: crEdnString, stringVal: "TODO Seq")
+        return CirruEdnValue(kind: crEdnList, listVal: @[])
       of "{}":
-        return CirruEdnValue(kind: crEdnString, stringVal: "TODO Seq")
+        return CirruEdnValue(kind: crEdnMap, mapVal: initTable[CirruEdnValue, CirruEdnValue]())
 
 proc parseEdnFromStr*(code: string): CirruEdnValue =
   let tree = parseCirru code
@@ -72,8 +73,10 @@ proc parseEdnFromStr*(code: string): CirruEdnValue =
           return mapExpr(dataNode)
         of "{}":
           return mapExpr(dataNode)
+        of "list":
+          return mapExpr(dataNode)
         else:
-          echo "Node text:", firstNode.text
+          echo "Node text: ", escape(firstNode.text)
           raise newException(EdnInvalidError, "Unknown operation")
       of cirruSeq:
         raise newException(EdnInvalidError, "does not support expression as command")
@@ -101,17 +104,17 @@ proc `==`*(x, y: CirruEdnValue): bool =
           return false
       return true
 
-    of crEdnSeq:
-      if x.seqVal.len != y.seqVal.len:
+    of crEdnList:
+      if x.listVal.len != y.listVal.len:
         return false
-      for idx, xi in x.seqVal:
-        if xi != y.seqVal[idx]:
+      for idx, xi in x.listVal:
+        if xi != y.listVal[idx]:
           return false
       return true
 
     of crEdnFn:
       echo "TODO compare"
       return true
-    of crEdnTable:
+    of crEdnMap:
       echo "TODO compare"
       return true

@@ -16,3 +16,6 @@ test "parse literals":
 
 test "parse vector":
   check parseEdnFromStr("[]") == CirruEdnValue(kind: crEdnVector, vectorVal: @[])
+  check parseEdnFromStr("list") == CirruEdnValue(kind: crEdnList, listVal: @[])
+  check parseEdnFromStr("[] 1") == CirruEdnValue(kind: crEdnVector, vectorVal: @[ CirruEdnValue(kind: crEdnNumber, numberVal: 1) ])
+  check parseEdnFromStr("[] $ []") == CirruEdnValue(kind: crEdnVector, vectorVal: @[ CirruEdnValue(kind: crEdnVector, vectorVal: @[  ]) ])
