@@ -6,6 +6,7 @@ import cirruEdn
 import cirruEdn/types
 import cirruEdn/format
 import cirruEdn/gen
+import cirruEdn/util
 
 test "data gen":
   check crEdn(true) == CirruEdnValue(kind: crEdnBool, boolVal: true)
@@ -69,3 +70,18 @@ test "iterable":
   for k, v in mapData:
     counted3 = counted3 + 1
   check (counted3 == 2)
+
+test "map":
+  let t1 = parseEdnFromStr("[] 1 2 3").map(proc(x: CirruEdnValue): float =
+    case x.kind:
+    of crEdnNumber: x.numberVal
+    else: 0
+  )
+  check (t1 == @[1.0, 2, 3])
+
+  let t2 = parseEdnFromStr("{} (:a 1) (:b 2)").mapPairs(proc(p: tuple[k: CirruEdnValue, v: CirruEdnValue]): float =
+    case p.v.kind:
+    of crEdnNumber: p.v.numberVal
+    else: 0.0
+  )
+  check (t2 == @[2.0, 1.0])
