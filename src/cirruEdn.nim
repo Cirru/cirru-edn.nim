@@ -42,7 +42,8 @@ proc mapExpr(tree: CirruNode): CirruEdnValue =
         let body: seq[CirruNode] = tree.list[1..tree.list.high]
         return CirruEdnValue(kind: crEdnVector, vectorVal: body.map(mapExpr))
       of "list":
-        return CirruEdnValue(kind: crEdnList, listVal: @[])
+        let body: seq[CirruNode] = tree.list[1..tree.list.high]
+        return CirruEdnValue(kind: crEdnList, listVal: body.map(mapExpr))
       of "{}":
         var dict = initTable[CirruEdnValue, CirruEdnValue]()
         for k, pair in tree.list[1..tree.list.high]:

@@ -27,6 +27,7 @@ type
 
   EdnEmptyError* = object of ValueError
   EdnInvalidError* = object of ValueError
+  EdnOpError* = object of ValueError
 
 proc hash*(value: CirruEdnValue): Hash =
   case value.kind
@@ -109,3 +110,23 @@ proc `==`*(x, y: CirruEdnValue): bool =
 
 proc `!=`*(x, y: CirruEdnValue): bool =
   not (x == y)
+
+iterator items*(x: CirruEdnValue): CirruEdnValue =
+  case x.kind:
+  of crEdnList:
+    for i, child in x.listVal:
+      yield child
+
+  of crEdnVector:
+    for i, child in x.vectorVal:
+      yield child
+
+  else:
+    raise newException(EdnOpError, "data is not iterable as a sequence")
+
+iterator pairs*(x: CirruEdnValue): tuple[k: CirruEdnValue, v: CirruEdnValue] =
+  if x.kind != crEdnMap:
+    raise newException(EdnOpError, "data is not iterable as map")
+
+  for k, v in x.mapVal:
+    yield (k, v)

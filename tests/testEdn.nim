@@ -50,3 +50,22 @@ test "parse map":
   check parseEdnFromStr("{} (:k |v)") == crEdn(t)
   t[crEdn("arr", true)] = crEdn(@[crEdn(1), crEdn(2), crEdn(3)])
   check parseEdnFromStr("{} (:k |v) (:arr $ [] 1 2 3)") == crEdn(t)
+
+test "iterable":
+  let vectorData = parseEdnFromStr("[] 1 2 3 4")
+  var counted: int = 0
+  for i in vectorData:
+    counted = counted + 1
+  check (counted == 4)
+
+  let listData = parseEdnFromStr("list 1 2 3 4")
+  var counted2: int = 0
+  for i in listData:
+    counted2 = counted2 + 1
+  check (counted2 == 4)
+
+  let mapData = parseEdnFromStr("{} (:a 1) (:b 2)")
+  var counted3 = 0
+  for k, v in mapData:
+    counted3 = counted3 + 1
+  check (counted3 == 2)
