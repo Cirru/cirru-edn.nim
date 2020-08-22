@@ -34,7 +34,9 @@ proc toString*(val: CirruEdnValue): string =
     of crEdnVector: fromArrayToString(val.vectorVal)
     of crEdnList: fromSeqToString(val.listVal)
     of crEdnMap: fromTableToString(val.mapVal)
-    else: "::CirruEdnValue::"
+    of crEdnNil: "nil"
+    of crEdnKeyword: ":" & val.keywordVal
+    of crEdnFn: "::fn"
 
 proc `$`*(v: CirruEdnValue): string =
   v.toString

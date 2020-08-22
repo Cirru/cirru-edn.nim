@@ -39,3 +39,14 @@ test "parse vector":
   check parseEdnFromStr("list") == crEdn(@[], true)
   check parseEdnFromStr("[] 1") == crEdn(@[ crEdn(1) ])
   check parseEdnFromStr("[] $ []") == crEdn(@[ crEdn(@[]) ])
+
+  var t = initTable[CirruEdnValue, CirruEdnValue]()
+  check parseEdnFromStr("[] $ {}") == crEdn(@[ crEdn(t) ])
+
+test "parse map":
+  var t = initTable[CirruEdnValue, CirruEdnValue]()
+  check parseEdnFromStr("{}") == crEdn(t)
+  t[crEdn("k", true)] = crEdn("v")
+  check parseEdnFromStr("{} (:k |v)") == crEdn(t)
+  t[crEdn("arr", true)] = crEdn(@[crEdn(1), crEdn(2), crEdn(3)])
+  check parseEdnFromStr("{} (:k |v) (:arr $ [] 1 2 3)") == crEdn(t)
