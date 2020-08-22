@@ -42,9 +42,21 @@ proc mapExpr(tree: CirruNode): CirruEdnValue =
         let body: seq[CirruNode] = tree.list[1..tree.list.high]
         return CirruEdnValue(kind: crEdnVector, vectorVal: body.map(mapExpr))
       of "list":
-        return CirruEdnValue(kind: crEdnList, listVal: @[])
+        let body: seq[CirruNode] = tree.list[1..tree.list.high]
+        return CirruEdnValue(kind: crEdnList, listVal: body.map(mapExpr))
       of "{}":
-        return CirruEdnValue(kind: crEdnMap, mapVal: initTable[CirruEdnValue, CirruEdnValue]())
+        var dict = initTable[CirruEdnValue, CirruEdnValue]()
+        for k, pair in tree.list[1..tree.list.high]:
+          if pair.kind == cirruString:
+            echo $pair
+            raise newException(EdnInvalidError, "Must be pairs in a map")
+          if pair.list.len != 2:
+            echo $pair
+            raise newException(EdnInvalidError, "Must be pair of 2 in a map")
+          let k = mapExpr pair.list[0]
+          let v = mapExpr pair.list[1]
+          dict[k] = v
+        return CirruEdnValue(kind: crEdnMap, mapVal: dict)
 
 proc parseEdnFromStr*(code: string): CirruEdnValue =
   let tree = parseCirru code
