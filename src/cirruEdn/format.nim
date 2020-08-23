@@ -17,8 +17,12 @@ proc fromTableToString(children: Table[CirruEdnValue, CirruEdnValue]): string =
   if size > 20:
     return "{...(20)...}"
   var tableStr = "{"
+  var counted = 0
   for k, child in pairs(children):
-    tableStr = tableStr & toString(k) & " " & toString(child) & ", "
+    tableStr = tableStr & toString(k) & " " & toString(child)
+    counted = counted + 1
+    if counted < children.len:
+      tableStr = tableStr & ", "
   tableStr = tableStr & "}"
   return tableStr
 
