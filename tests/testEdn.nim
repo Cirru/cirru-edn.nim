@@ -3,10 +3,6 @@ import unittest
 import tables
 
 import cirruEdn
-import cirruEdn/types
-import cirruEdn/format
-import cirruEdn/gen
-import cirruEdn/util
 
 test "data gen":
   check crEdn(true) == CirruEdnValue(kind: crEdnBool, boolVal: true)
@@ -71,7 +67,7 @@ test "iterable":
     counted3 = counted3 + 1
   check (counted3 == 2)
 
-test "map":
+test "iterate data in map":
   let t1 = parseEdnFromStr("[] 1 2 3").map(proc(x: CirruEdnValue): float =
     case x.kind:
     of crEdnNumber: x.numberVal
@@ -85,3 +81,11 @@ test "map":
     else: 0.0
   )
   check (t2 == @[2.0, 1.0])
+
+test "parse large file":
+  let content = readFile("tests/compact.cirru")
+  let data = parseEdnFromStr(content)
+  let generated = $ data # generates simple EDN
+
+  let expected = readFile("tests/compact.edn")
+  check (generated == expected)

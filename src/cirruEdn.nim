@@ -1,10 +1,18 @@
 
-import cirruParser
-import cirruEdn/types
 import re
 import strutils
 import sequtils
 import tables
+import cirruParser
+
+import cirruEdn/types
+import cirruEdn/format
+import cirruEdn/gen
+import cirruEdn/util
+
+export crEdn, CirruEdnValue, CirruEdnKind, map, mapPairs, items, pairs, `$`, `==`, `!=`
+
+export EdnEmptyError, EdnInvalidError, EdnOpError
 
 proc mapExpr(tree: CirruNode): CirruEdnValue =
 
