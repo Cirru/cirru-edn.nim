@@ -3,6 +3,8 @@ import re
 import strutils
 import sequtils
 import tables
+import sets
+
 import cirruParser
 
 import cirruEdn/types
@@ -52,6 +54,9 @@ proc mapExpr(tree: CirruNode): CirruEdnValue =
       of "list":
         let body: seq[CirruNode] = tree.list[1..tree.list.high]
         return CirruEdnValue(kind: crEdnList, listVal: body.map(mapExpr))
+      of "set":
+        let body: seq[CirruNode] = tree.list[1..tree.list.high]
+        return CirruEdnValue(kind: crEdnSet, setVal: toHashSet(body.map(mapExpr)))
       of "{}":
         var dict = initTable[CirruEdnValue, CirruEdnValue]()
         for k, pair in tree.list[1..tree.list.high]:
@@ -94,6 +99,8 @@ proc parseEdnFromStr*(code: string): CirruEdnValue =
         of "{}":
           return mapExpr(dataNode)
         of "list":
+          return mapExpr(dataNode)
+        of "set":
           return mapExpr(dataNode)
         else:
           echo "Node text: ", escape(firstNode.text)

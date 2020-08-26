@@ -1,5 +1,7 @@
 
 import tables
+import sets
+
 import cirruEdn/types
 
 proc crEdn*(x: int): CirruEdnValue =
@@ -25,6 +27,9 @@ proc crEdn*(xs: seq[CirruEdnValue], asList: bool = false): CirruEdnValue =
     CirruEdnValue(kind: crEdnList, listVal: xs)
   else:
     CirruEdnValue(kind: crEdnVector, vectorVal: xs)
+
+proc crEdn*(xs: HashSet[CirruEdnValue]): CirruEdnValue =
+  CirruEdnValue(kind: crEdnSet, setVal: xs)
 
 proc crEdn*(xs: Table[CirruEdnValue, CirruEdnValue]): CirruEdnValue =
   CirruEdnValue(kind: crEdnMap, mapVal: xs)
