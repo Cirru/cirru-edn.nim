@@ -1,6 +1,7 @@
 import tables
 import strutils
 import sequtils
+import sets
 
 import cirruEdn/types
 
@@ -11,6 +12,9 @@ proc fromArrayToString(children: seq[CirruEdnValue]): string =
 
 proc fromSeqToString(children: seq[CirruEdnValue]): string =
   return "(" & children.mapIt(toString(it)).join(" ") & ")"
+
+proc fromSetToString(children: HashSet[CirruEdnValue]): string =
+  return "#{" & children.mapIt(toString(it)).join(" ") & "}"
 
 proc fromTableToString(children: Table[CirruEdnValue, CirruEdnValue]): string =
   let size = children.len()
@@ -37,6 +41,7 @@ proc toString*(val: CirruEdnValue): string =
     of crEdnString: escape(val.stringVal)
     of crEdnVector: fromArrayToString(val.vectorVal)
     of crEdnList: fromSeqToString(val.listVal)
+    of crEdnSet: fromSetToString(val.setVal)
     of crEdnMap: fromTableToString(val.mapVal)
     of crEdnNil: "nil"
     of crEdnKeyword: ":" & val.keywordVal

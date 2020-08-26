@@ -1,5 +1,6 @@
 import tables
 import hashes
+import sets
 
 type
   CirruEdnKind* = enum
@@ -10,6 +11,7 @@ type
     crEdnKeyword,
     crEdnVector,
     crEdnList,
+    crEdnSet,
     crEdnMap,
     crEdnFn
 
@@ -23,6 +25,7 @@ type
     of crEdnFn: fnVal*: proc()
     of crEdnVector: vectorVal*: seq[CirruEdnValue]
     of crEdnList: listVal*: seq[CirruEdnValue]
+    of crEdnSet: setVal*: HashSet[CirruEdnValue]
     of crEdnMap: mapVal*: Table[CirruEdnValue, CirruEdnValue]
 
   EdnEmptyError* = object of ValueError
@@ -53,6 +56,11 @@ proc hash*(value: CirruEdnValue): Hash =
     of crEdnList:
       result = hash("list:")
       for idx, x in value.listVal:
+        result = result !& hash(x)
+      result = !$ result
+    of crEdnSet:
+      result = hash("set:")
+      for x in value.setVal.items:
         result = result !& hash(x)
       result = !$ result
     of crEdnMap:
@@ -98,6 +106,15 @@ proc `==`*(x, y: CirruEdnValue): bool =
           return false
       return true
 
+    of crEdnSet:
+      if x.setVal.len != y.setVal.len:
+        return false
+
+      for xi in x.setVal.items:
+        if not y.setVal.contains(xi):
+          return false
+      return true
+
     of crEdnMap:
       if x.mapVal.len != y.mapVal.len:
         return false
@@ -119,6 +136,10 @@ iterator items*(x: CirruEdnValue): CirruEdnValue =
 
   of crEdnVector:
     for i, child in x.vectorVal:
+      yield child
+
+  of crEdnSet:
+    for child in x.setVal.items:
       yield child
 
   else:
