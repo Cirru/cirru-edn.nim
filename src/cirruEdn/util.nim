@@ -1,6 +1,7 @@
 
 import sequtils
 import sets
+import tables
 
 import cirruEdn/types
 
@@ -28,3 +29,18 @@ proc mapPairs*[T](xs: CirruEdnValue, f: proc (p: tuple[k: CirruEdnValue, v: Cirr
 
   else:
     raise newException(EdnOpError, "map does not work on Cirru EDN literals")
+
+proc contains*(x: CirruEdnValue, k: CirruEdnValue): bool =
+  if x.kind != crEdnMap:
+    raise newException(EdnOpError, "hasKey only works for a map")
+  return x.mapVal.hasKey(k)
+
+proc get*(x: CirruEdnValue, k: CirruEdnValue): CirruEdnValue =
+  case x.kind:
+  of crEdnMap:
+    if x.contains(k):
+      return x.mapVal[k]
+    else:
+      return CirruEdnValue(kind: crEdnNil)
+  else:
+    raise newException(EdnOpError, "can't run get on a literal or seq")

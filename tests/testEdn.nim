@@ -94,3 +94,9 @@ test "parse large file":
 
   let expected = readFile("tests/compact.edn")
   check (generated == expected)
+
+test "utils":
+  let dict = parseEdnFromStr("{} (:a 1)")
+  check (dict.contains(crEdn("a", true)) == true)
+  check (dict.get(crEdn("a", true)) == crEdn(1))
+  check (dict.get(crEdn("b", true)) == crEdn())
