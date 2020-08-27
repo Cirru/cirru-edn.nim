@@ -12,7 +12,7 @@ import cirruEdn/format
 import cirruEdn/gen
 import cirruEdn/util
 
-export crEdn, CirruEdnValue, CirruEdnKind, map, mapPairs, items, pairs, get, contains, `$`, `==`, `!=`
+export crEdn, CirruEdnValue, CirruEdnKind, map, mapPairs, items, pairs, get, contains, toJson, `$`, `==`, `!=`
 
 export EdnEmptyError, EdnInvalidError, EdnOpError
 

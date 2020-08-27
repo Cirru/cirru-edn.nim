@@ -2,6 +2,7 @@
 import sequtils
 import sets
 import tables
+import json
 
 import cirruEdn/types
 
@@ -44,3 +45,45 @@ proc get*(x: CirruEdnValue, k: CirruEdnValue): CirruEdnValue =
       return CirruEdnValue(kind: crEdnNil)
   else:
     raise newException(EdnOpError, "can't run get on a literal or seq")
+
+proc toJson*(x: CirruEdnValue): JsonNode =
+  case x.kind:
+  of crEdnNil:
+    return JsonNode(kind: JNull)
+  of crEdnBool:
+    return JsonNode(kind: JBool, bval: x.boolVal)
+  of crEdnNumber:
+    return JsonNode(kind: JFloat, fnum: x.numberVal)
+  of crEdnString:
+    return JsonNode(kind: JString, str: x.stringVal)
+  of crEdnKeyword:
+    return JsonNode(kind: JString, str: x.keywordVal)
+  of crEdnList:
+    var elems: seq[JsonNode] = @[]
+    for i, child in x.listVal:
+      elems.add toJson(child)
+    return JsonNode(kind: JArray, elems: elems)
+  of crEdnVector:
+    var elems: seq[JsonNode] = @[]
+    for i, child in x.vectorVal:
+      elems.add toJson(child)
+    return JsonNode(kind: JArray, elems: elems)
+  of crEdnSet:
+    var elems: seq[JsonNode] = @[]
+    for child in x.setVal.items:
+      elems.add toJson(child)
+    return JsonNode(kind: JArray, elems: elems)
+  of crEdnMap:
+    var fields: OrderedTable[string, JsonNode]
+    for k, v in x.mapVal.pairs():
+      case k.kind:
+      of crEdnString:
+        fields[k.stringVal] = toJson(v)
+      of crEdnKeyword:
+        fields[k.keywordVal] = toJson(v)
+      else:
+        raise newException(EdnOpError, "required string keys in JObject")
+    return JsonNode(kind: JObject, fields: fields)
+
+  of crEdnFn:
+    return JsonNode(kind: JNull)

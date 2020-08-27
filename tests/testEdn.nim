@@ -2,6 +2,7 @@
 import unittest
 import tables
 import sets
+import json
 
 import cirruEdn
 
@@ -100,3 +101,6 @@ test "utils":
   check (dict.contains(crEdn("a", true)) == true)
   check (dict.get(crEdn("a", true)) == crEdn(1))
   check (dict.get(crEdn("b", true)) == crEdn())
+
+test "to json":
+  check (%*{"a": [1.0, 2.0]} == toJson(parseEdnFromStr("{} (:a ([] 1 2))")))
