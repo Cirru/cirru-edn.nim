@@ -21,7 +21,7 @@ parseEdnFromStr("[] 1 2 3")
 
 crEdn(1)
 
-let x =crEdn(@[1])
+let x = crEdn(@[1])
 
 echo $x # stringify
 ```
