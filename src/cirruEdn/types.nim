@@ -16,6 +16,8 @@ type
     crEdnFn
 
   CirruEdnValue* = object
+    line*: int
+    column*: int
     case kind*: CirruEdnKind
     of crEdnNil: discard
     of crEdnBool: boolVal*: bool
