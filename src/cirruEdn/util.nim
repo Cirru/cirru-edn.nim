@@ -87,3 +87,29 @@ proc toJson*(x: CirruEdnValue): JsonNode =
 
   of crEdnFn:
     return JsonNode(kind: JNull)
+
+# notice that JSON does not have keywords or some other types
+proc fromJson*(v: JsonNode): CirruEdnValue =
+  case v.kind
+  of JString:
+    return CirruEdnValue(kind: crEdnString, stringVal: v.str)
+  of JInt:
+    return CirruEdnValue(kind: crEdnNumber, numberVal: v.to(float))
+  of JFloat:
+    return CirruEdnValue(kind: crEdnNumber, numberVal: v.fnum)
+  of JBool:
+    return CirruEdnValue(kind: crEdnBool, boolVal: v.bval)
+  of JNull:
+    return CirruEdnValue(kind: crEdnNil)
+  of JArray:
+    var arr: seq[CirruEdnValue]
+    for v in v.elems:
+      arr.add fromJson(v)
+    return CirruEdnValue(kind: crEdnVector, vectorVal: arr)
+  of JObject:
+    var table = initTable[CirruEdnValue, CirruEdnValue]()
+    for key, value in v:
+      let keyContent = CirruEdnValue(kind: crEdnString, stringVal: key)
+      let value = fromJson(value)
+      table.add(keyContent, value)
+    return CirruEdnValue(kind: crEdnMap, mapVal: table)
