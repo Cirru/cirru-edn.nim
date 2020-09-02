@@ -70,6 +70,10 @@ proc mapExpr(tree: CirruNode): CirruEdnValue =
           let v = mapExpr pair.list[1]
           dict[k] = v
         return CirruEdnValue(kind: crEdnMap, mapVal: dict, line: tree.line, column: tree.column)
+      of "quote":
+        if tree.list.len != 2:
+          raise newException(EdnInvalidError, "quote requires only 1 item")
+        return CirruEdnValue(kind: crEdnQuotedCirru, quotedVal: tree.list[1])
 
 proc parseEdnFromStr*(code: string): CirruEdnValue =
   let tree = parseCirru code
@@ -101,6 +105,8 @@ proc parseEdnFromStr*(code: string): CirruEdnValue =
         of "list":
           return mapExpr(dataNode)
         of "set":
+          return mapExpr(dataNode)
+        of "quote":
           return mapExpr(dataNode)
         else:
           echo "Node text: ", escape(firstNode.text)

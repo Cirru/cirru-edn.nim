@@ -88,6 +88,9 @@ proc toJson*(x: CirruEdnValue): JsonNode =
   of crEdnFn:
     return JsonNode(kind: JNull)
 
+  of crEdnQuotedCirru:
+    return JsonNode(kind: JString, str: "QuotedCirru:" & $(x.quotedVal))
+
 # notice that JSON does not have keywords or some other types
 proc fromJson*(v: JsonNode): CirruEdnValue =
   case v.kind

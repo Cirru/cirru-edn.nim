@@ -2,6 +2,8 @@ import tables
 import hashes
 import sets
 
+import cirruParser
+
 type
   CirruEdnKind* = enum
     crEdnNil,
@@ -13,7 +15,8 @@ type
     crEdnList,
     crEdnSet,
     crEdnMap,
-    crEdnFn
+    crEdnFn,
+    crEdnQuotedCirru,
 
   CirruEdnValue* = object
     line*: int
@@ -29,10 +32,21 @@ type
     of crEdnList: listVal*: seq[CirruEdnValue]
     of crEdnSet: setVal*: HashSet[CirruEdnValue]
     of crEdnMap: mapVal*: Table[CirruEdnValue, CirruEdnValue]
+    of crEdnQuotedCirru: quotedVal*: CirruNode
 
   EdnEmptyError* = object of ValueError
   EdnInvalidError* = object of ValueError
   EdnOpError* = object of ValueError
+
+proc hash*(value: CirruNode): Hash =
+  case value.kind:
+  of cirruString:
+    return hash(value.text)
+  of cirruSeq:
+    result = hash("cirruSeq:")
+    for x in value.list:
+      result = result !& hash(x)
+    result = !$ result
 
 proc hash*(value: CirruEdnValue): Hash =
   case value.kind
@@ -47,7 +61,7 @@ proc hash*(value: CirruEdnValue): Hash =
     of crEdnKeyword:
       return hash("keyword:" & value.keywordVal)
     of crEdnFn:
-      result =  hash("fn:")
+      result = hash("fn:")
       result = result !& hash(value.fnVal)
       result = !$ result
     of crEdnVector:
@@ -71,6 +85,11 @@ proc hash*(value: CirruEdnValue): Hash =
         result = result !& hash(k)
         result = result !& hash(v)
 
+      result = !$ result
+
+    of crEdnQuotedCirru:
+      result =  hash("quoted:")
+      result = result !& hash(value.quotedVal)
       result = !$ result
 
 proc `==`*(x, y: CirruEdnValue): bool =
@@ -126,6 +145,9 @@ proc `==`*(x, y: CirruEdnValue): bool =
           return false
 
       return true
+
+    of crEdnQuotedCirru:
+      return x.quotedVal == y.quotedVal
 
 proc `!=`*(x, y: CirruEdnValue): bool =
   not (x == y)
