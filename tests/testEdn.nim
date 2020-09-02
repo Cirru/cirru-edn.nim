@@ -105,7 +105,7 @@ test "utils":
 
 test "to json":
   check (%*{"a": [1.0, 2.0]} == toJson(parseEdnFromStr("{} (:a ([] 1 2))")))
-  check (fromJson(%*{"a": [1.0, 2.0]}) == parseEdnFromStr("{} (|a ([] 1 2))"))
+  check (toCirruEdn(%*{"a": [1.0, 2.0]}) == parseEdnFromStr("{} (|a ([] 1 2))"))
 
 test "quoted":
   check (parseEdnFromStr("quote $ + 1 2") == CirruEdnValue(kind: crEdnQuotedCirru, quotedVal: parseCirru("+ 1 2").list[0]))

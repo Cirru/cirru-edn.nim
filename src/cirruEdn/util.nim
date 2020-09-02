@@ -4,6 +4,7 @@ import sets
 import tables
 import json
 
+import cirruParser
 import cirruEdn/types
 
 proc map*[T](xs: CirruEdnValue, f: proc (x: CirruEdnValue): T): seq[T] =
@@ -89,10 +90,10 @@ proc toJson*(x: CirruEdnValue): JsonNode =
     return JsonNode(kind: JNull)
 
   of crEdnQuotedCirru:
-    return JsonNode(kind: JString, str: "QuotedCirru:" & $(x.quotedVal))
+    return toJson(x.quotedVal)
 
 # notice that JSON does not have keywords or some other types
-proc fromJson*(v: JsonNode): CirruEdnValue =
+proc toCirruEdn*(v: JsonNode): CirruEdnValue =
   case v.kind
   of JString:
     return CirruEdnValue(kind: crEdnString, stringVal: v.str)
@@ -107,12 +108,12 @@ proc fromJson*(v: JsonNode): CirruEdnValue =
   of JArray:
     var arr: seq[CirruEdnValue]
     for v in v.elems:
-      arr.add fromJson(v)
+      arr.add toCirruEdn(v)
     return CirruEdnValue(kind: crEdnVector, vectorVal: arr)
   of JObject:
     var table = initTable[CirruEdnValue, CirruEdnValue]()
     for key, value in v:
       let keyContent = CirruEdnValue(kind: crEdnString, stringVal: key)
-      let value = fromJson(value)
+      let value = toCirruEdn(value)
       table.add(keyContent, value)
     return CirruEdnValue(kind: crEdnMap, mapVal: table)
