@@ -27,7 +27,8 @@ type
     of crEdnNumber: numberVal*: float
     of crEdnString: stringVal*: string
     of crEdnKeyword: keywordVal*: string
-    of crEdnFn: fnVal*: proc()
+    of crEdnFn:
+      fnVal*: proc(exprList: seq[CirruNode], interpret: proc(expr: CirruNode): CirruEdnValue): CirruEdnValue
     of crEdnVector: vectorVal*: seq[CirruEdnValue]
     of crEdnList: listVal*: seq[CirruEdnValue]
     of crEdnSet: setVal*: HashSet[CirruEdnValue]
