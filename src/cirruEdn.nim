@@ -15,6 +15,7 @@ import cirruEdn/util
 export crEdn, CirruEdnValue, CirruEdnKind, `$`, `==`, `!=`
 export EdnEmptyError, EdnInvalidError, EdnOpError
 export map, mapPairs, items, pairs, hash, get, contains, toJson, toCirruEdn
+export CirruEdnScope, EdnEvalFn
 
 proc mapExpr(tree: CirruNode): CirruEdnValue =
 
