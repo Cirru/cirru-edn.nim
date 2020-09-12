@@ -7,9 +7,9 @@ import cirruParser
 
 type
 
-  CirruEdnScope* = object
+  CirruEdnScope* = ref object
     dict*: Table[string, CirruEdnValue]
-    parent*: Option[ref CirruEdnScope]
+    parent*: Option[CirruEdnScope]
 
   EdnEvalFn* = proc(expr: CirruNode, ns: string, scope: CirruEdnScope): CirruEdnValue
 
