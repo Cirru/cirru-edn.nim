@@ -1,10 +1,18 @@
 import tables
 import hashes
 import sets
+import options
 
 import cirruParser
 
 type
+
+  CirruEdnScope* = object
+    dict*: Table[string, CirruEdnValue]
+    parent*: Option[ref CirruEdnScope]
+
+  EdnEvalFn* = proc(expr: CirruNode, ns: string, scope: CirruEdnScope): CirruEdnValue
+
   CirruEdnKind* = enum
     crEdnNil,
     crEdnBool,
@@ -28,7 +36,7 @@ type
     of crEdnString: stringVal*: string
     of crEdnKeyword: keywordVal*: string
     of crEdnFn:
-      fnVal*: proc(exprList: seq[CirruEdnValue], interpret: proc(expr: CirruNode): CirruEdnValue): CirruEdnValue
+      fnVal*: proc(exprList: seq[CirruEdnValue], interpret: EdnEvalFn, ns: string, scope: CirruEdnScope): CirruEdnValue
     of crEdnVector: vectorVal*: seq[CirruEdnValue]
     of crEdnList: listVal*: seq[CirruEdnValue]
     of crEdnSet: setVal*: HashSet[CirruEdnValue]
