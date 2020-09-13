@@ -53,7 +53,7 @@ proc hash*(value: CirruNode): Hash =
     return hash(value.text)
   of cirruSeq:
     result = hash("cirruSeq:")
-    for x in value.list:
+    for x in value:
       result = result !& hash(x)
     result = !$ result
 
