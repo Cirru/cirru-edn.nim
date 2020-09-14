@@ -7,9 +7,9 @@ import cirruParser
 
 type
 
-  CirruEdnScope* = object
+  CirruEdnScope* = ref object
     dict*: Table[string, CirruEdnValue]
-    parent*: Option[ref CirruEdnScope]
+    parent*: Option[CirruEdnScope]
 
   EdnEvalFn* = proc(expr: CirruNode, ns: string, scope: CirruEdnScope): CirruEdnValue
 
@@ -53,7 +53,7 @@ proc hash*(value: CirruNode): Hash =
     return hash(value.text)
   of cirruSeq:
     result = hash("cirruSeq:")
-    for x in value.list:
+    for x in value:
       result = result !& hash(x)
     result = !$ result
 

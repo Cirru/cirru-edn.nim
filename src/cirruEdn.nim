@@ -43,38 +43,38 @@ proc mapExpr(tree: CirruNode): CirruEdnValue =
         echo tree.text
         raise newException(EdnInvalidError, "Unknown data")
   of cirruSeq:
-    if tree.list.len == 0:
+    if tree.len == 0:
       raise newException(EdnInvalidError, "[] is not a valid expression")
-    let firstNode = tree.list[0]
+    let firstNode = tree[0]
     if firstNode.kind == cirruSeq:
       raise newException(EdnInvalidError, "nested expr is not supported as operator")
     case firstNode.text:
       of "[]":
-        let body: seq[CirruNode] = tree.list[1..tree.list.high]
+        let body: seq[CirruNode] = tree[1..^1]
         return CirruEdnValue(kind: crEdnVector, vectorVal: body.map(mapExpr), line: tree.line, column: tree.column)
       of "list":
-        let body: seq[CirruNode] = tree.list[1..tree.list.high]
+        let body: seq[CirruNode] = tree[1..^1]
         return CirruEdnValue(kind: crEdnList, listVal: body.map(mapExpr), line: tree.line, column: tree.column)
       of "set":
-        let body: seq[CirruNode] = tree.list[1..tree.list.high]
+        let body: seq[CirruNode] = tree[1..^1]
         return CirruEdnValue(kind: crEdnSet, setVal: toHashSet(body.map(mapExpr)), line: tree.line, column: tree.column)
       of "{}":
         var dict = initTable[CirruEdnValue, CirruEdnValue]()
-        for k, pair in tree.list[1..tree.list.high]:
+        for k, pair in tree[1..^1]:
           if pair.kind == cirruString:
             echo $pair
             raise newException(EdnInvalidError, "Must be pairs in a map")
-          if pair.list.len != 2:
+          if pair.len != 2:
             echo $pair
             raise newException(EdnInvalidError, "Must be pair of 2 in a map")
-          let k = mapExpr pair.list[0]
-          let v = mapExpr pair.list[1]
+          let k = mapExpr pair[0]
+          let v = mapExpr pair[1]
           dict[k] = v
         return CirruEdnValue(kind: crEdnMap, mapVal: dict, line: tree.line, column: tree.column)
       of "quote":
-        if tree.list.len != 2:
+        if tree.len != 2:
           raise newException(EdnInvalidError, "quote requires only 1 item")
-        return CirruEdnValue(kind: crEdnQuotedCirru, quotedVal: tree.list[1])
+        return CirruEdnValue(kind: crEdnQuotedCirru, quotedVal: tree[1])
 
 proc parseEdnFromStr*(code: string): CirruEdnValue =
   let tree = parseCirru code
@@ -83,22 +83,22 @@ proc parseEdnFromStr*(code: string): CirruEdnValue =
   of cirruString:
     raise newException(EdnInvalidError, "does not handle raw string from Cirru parser")
   of cirruSeq:
-    if tree.list.len == 0:
+    if tree.len == 0:
       raise newException(EdnEmptyError, "[] represents no value")
-    elif tree.list.len > 1:
+    elif tree.len > 1:
       raise newException(EdnInvalidError, "has too many expressions")
-    let dataNode = tree.list[0]
+    let dataNode = tree[0]
     case dataNode.kind:
     of cirruString:
       raise newException(EdnInvalidError, "does not handle raw string from Cirru parser")
     of cirruSeq:
-      let firstNode = dataNode.list[0]
+      let firstNode = dataNode[0]
       case firstNode.kind:
       of cirruString:
         case firstNode.text:
         of "do":
-          if dataNode.list.len == 2:
-            return mapExpr(dataNode.list[1])
+          if dataNode.len == 2:
+            return mapExpr(dataNode[1])
         of "[]":
           return mapExpr(dataNode)
         of "{}":
