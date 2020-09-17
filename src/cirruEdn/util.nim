@@ -86,9 +86,6 @@ proc toJson*(x: CirruEdnValue): JsonNode =
         raise newException(EdnOpError, "required string keys in JObject")
     return JsonNode(kind: JObject, fields: fields)
 
-  of crEdnFn:
-    return JsonNode(kind: JNull)
-
   of crEdnQuotedCirru:
     return toJson(x.quotedVal)
 

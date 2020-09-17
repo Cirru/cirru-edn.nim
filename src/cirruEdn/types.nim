@@ -6,13 +6,6 @@ import options
 import cirruParser
 
 type
-
-  CirruEdnScope* = ref object
-    dict*: Table[string, CirruEdnValue]
-    parent*: Option[CirruEdnScope]
-
-  EdnEvalFn* = proc(expr: CirruNode, ns: string, scope: CirruEdnScope): CirruEdnValue
-
   CirruEdnKind* = enum
     crEdnNil,
     crEdnBool,
@@ -23,7 +16,6 @@ type
     crEdnList,
     crEdnSet,
     crEdnMap,
-    crEdnFn,
     crEdnQuotedCirru,
 
   CirruEdnValue* = object
@@ -35,8 +27,6 @@ type
     of crEdnNumber: numberVal*: float
     of crEdnString: stringVal*: string
     of crEdnKeyword: keywordVal*: string
-    of crEdnFn:
-      fnVal*: proc(exprList: seq[CirruEdnValue], interpret: EdnEvalFn, ns: string, scope: CirruEdnScope): CirruEdnValue
     of crEdnVector: vectorVal*: seq[CirruEdnValue]
     of crEdnList: listVal*: seq[CirruEdnValue]
     of crEdnSet: setVal*: HashSet[CirruEdnValue]
@@ -69,10 +59,6 @@ proc hash*(value: CirruEdnValue): Hash =
       return hash("bool:" & $(value.boolVal))
     of crEdnKeyword:
       return hash("keyword:" & value.keywordVal)
-    of crEdnFn:
-      result = hash("fn:")
-      result = result !& hash(value.fnVal)
-      result = !$ result
     of crEdnVector:
       result = hash("vector:")
       for idx, x in value.vectorVal:
@@ -116,8 +102,6 @@ proc `==`*(x, y: CirruEdnValue): bool =
       return x.numberVal == y.numberVal
     of crEdnKeyword:
       return x.keywordVal == y.keywordVal
-    of crEdnFn:
-      return x.fnVal == y.fnVal
 
     of crEdnVector:
       if x.vectorVal.len != y.vectorVal.len:
