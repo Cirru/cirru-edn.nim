@@ -45,7 +45,6 @@ proc toString*(val: CirruEdnValue): string =
     of crEdnMap: fromTableToString(val.mapVal)
     of crEdnNil: "nil"
     of crEdnKeyword: ":" & val.keywordVal
-    of crEdnFn: "::fn"
     of crEdnQuotedCirru: $(val.quotedVal)
 
 proc `$`*(v: CirruEdnValue): string =
