@@ -4,8 +4,9 @@ import tables
 import sets
 import json
 
-import cirruEdn
-import cirruParser
+import cirru_parser
+
+import cirru_edn
 
 test "data gen":
   check crEdn(true) == CirruEdnValue(kind: crEdnBool, boolVal: true)

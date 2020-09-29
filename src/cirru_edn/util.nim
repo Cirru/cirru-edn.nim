@@ -4,8 +4,9 @@ import sets
 import tables
 import json
 
-import cirruParser
-import cirruEdn/types
+import cirru_parser
+
+import ./types
 
 proc map*[T](xs: CirruEdnValue, f: proc (x: CirruEdnValue): T): seq[T] =
   case xs.kind:
