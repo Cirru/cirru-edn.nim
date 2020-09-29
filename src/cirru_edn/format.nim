@@ -3,7 +3,7 @@ import strutils
 import sequtils
 import sets
 
-import cirruEdn/types
+import ./types
 
 proc toString*(val: CirruEdnValue): string
 

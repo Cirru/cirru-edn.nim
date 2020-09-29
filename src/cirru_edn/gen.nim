@@ -2,7 +2,7 @@
 import tables
 import sets
 
-import cirruEdn/types
+import ./types
 
 proc crEdn*(x: int): CirruEdnValue =
   CirruEdnValue(kind: crEdnNumber, numberVal: x.float)

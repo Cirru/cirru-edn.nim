@@ -6,15 +6,12 @@ Cirru EDN in Nim
 
 ### Usage
 
-```bash
-nimble install cirru-edn # not published yet
-
-# alternatively
-nimble install https://github.com/Cirru/cirru-edn.nim
+```nim
+requires "https://github.com/Cirru/cirru-edn.nim#v0.3.0"
 ```
 
 ```nim
-import cirruEdn
+import cirru_edn
 
 parseEdnFromStr("do 1") # gets 1
 parseEdnFromStr("[] 1 2 3")
@@ -29,7 +26,7 @@ echo $x # stringify
 type detection:
 
 ```nim
-import cirruEdn
+import cirru_edn
 
 let x = parseEdnFromStr("do 1") # gets 1
 

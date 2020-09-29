@@ -5,12 +5,12 @@ import sequtils
 import tables
 import sets
 
-import cirruParser
+import cirru_parser
 
-import cirruEdn/types
-import cirruEdn/format
-import cirruEdn/gen
-import cirruEdn/util
+import cirru_edn/types
+import cirru_edn/format
+import cirru_edn/gen
+import cirru_edn/util
 
 export crEdn, CirruEdnValue, CirruEdnKind, `$`, `==`, `!=`
 export EdnEmptyError, EdnInvalidError, EdnOpError

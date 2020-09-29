@@ -3,7 +3,7 @@ import hashes
 import sets
 import options
 
-import cirruParser
+import cirru_parser
 
 type
   CirruEdnKind* = enum
