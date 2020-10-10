@@ -4,6 +4,7 @@ import strutils
 import sequtils
 import tables
 import sets
+import options
 
 import cirru_parser
 
@@ -42,9 +43,9 @@ proc mapExpr(tree: CirruNode): CirruEdnValue =
         echo tree.text
         raise newException(EdnInvalidError, "Unknown data")
   of cirruSeq:
-    if tree.len == 0:
+    if tree.isEmpty:
       raise newException(EdnInvalidError, "[] is not a valid expression")
-    let firstNode = tree[0]
+    let firstNode = tree.first.get
     if firstNode.kind == cirruSeq:
       raise newException(EdnInvalidError, "nested expr is not supported as operator")
     case firstNode.text:
@@ -66,14 +67,14 @@ proc mapExpr(tree: CirruNode): CirruEdnValue =
           if pair.len != 2:
             echo $pair
             raise newException(EdnInvalidError, "Must be pair of 2 in a map")
-          let k = mapExpr pair[0]
-          let v = mapExpr pair[1]
+          let k = mapExpr pair[0].get
+          let v = mapExpr pair[1].get
           dict[k] = v
         return CirruEdnValue(kind: crEdnMap, mapVal: dict, line: tree.line, column: tree.column)
       of "quote":
         if tree.len != 2:
           raise newException(EdnInvalidError, "quote requires only 1 item")
-        return CirruEdnValue(kind: crEdnQuotedCirru, quotedVal: tree[1])
+        return CirruEdnValue(kind: crEdnQuotedCirru, quotedVal: tree[1].get)
 
 proc parseEdnFromStr*(code: string): CirruEdnValue =
   let tree = parseCirru code
@@ -86,18 +87,18 @@ proc parseEdnFromStr*(code: string): CirruEdnValue =
       raise newException(EdnEmptyError, "[] represents no value")
     elif tree.len > 1:
       raise newException(EdnInvalidError, "has too many expressions")
-    let dataNode = tree[0]
+    let dataNode = tree[0].get
     case dataNode.kind:
     of cirruString:
       raise newException(EdnInvalidError, "does not handle raw string from Cirru parser")
     of cirruSeq:
-      let firstNode = dataNode[0]
+      let firstNode = dataNode[0].get
       case firstNode.kind:
       of cirruString:
         case firstNode.text:
         of "do":
           if dataNode.len == 2:
-            return mapExpr(dataNode[1])
+            return mapExpr(dataNode[1].get)
         of "[]":
           return mapExpr(dataNode)
         of "{}":

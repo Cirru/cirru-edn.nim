@@ -3,6 +3,7 @@ import unittest
 import tables
 import sets
 import json
+import options
 
 import cirru_parser
 
@@ -109,4 +110,4 @@ test "to json":
   check (toCirruEdn(%*{"a": [1.0, 2.0]}) == parseEdnFromStr("{} (|a ([] 1 2))"))
 
 test "quoted":
-  check (parseEdnFromStr("quote $ + 1 2") == CirruEdnValue(kind: crEdnQuotedCirru, quotedVal: parseCirru("+ 1 2").list[0]))
+  check (parseEdnFromStr("quote $ + 1 2") == CirruEdnValue(kind: crEdnQuotedCirru, quotedVal: parseCirru("+ 1 2").first.get))
