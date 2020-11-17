@@ -55,7 +55,7 @@ proc mapExpr(tree: CirruNode): CirruEdnValue =
       of "list":
         let body: seq[CirruNode] = tree[1..^1]
         return CirruEdnValue(kind: crEdnList, listVal: body.map(mapExpr), line: tree.line, column: tree.column)
-      of "set":
+      of "set", "#{}":
         let body: seq[CirruNode] = tree[1..^1]
         return CirruEdnValue(kind: crEdnSet, setVal: toHashSet(body.map(mapExpr)), line: tree.line, column: tree.column)
       of "{}":
@@ -105,7 +105,7 @@ proc parseEdnFromStr*(code: string): CirruEdnValue =
           return mapExpr(dataNode)
         of "list":
           return mapExpr(dataNode)
-        of "set":
+        of "set", "#{}":
           return mapExpr(dataNode)
         of "quote":
           return mapExpr(dataNode)
