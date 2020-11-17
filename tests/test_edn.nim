@@ -56,6 +56,7 @@ test "parse map":
 test "parse set":
   check parseEdnFromStr("set") == crEdn(HashSet[CirruEdnValue]())
   check parseEdnFromStr("set 1 :a") == crEdn(toHashSet(@[crEdn(1), crEdn("a", true) ]))
+  check parseEdnFromStr("#{} 1 :a") == crEdn(toHashSet(@[crEdn(1), crEdn("a", true) ]))
 
 test "iterable":
   let vectorData = parseEdnFromStr("[] 1 2 3 4")
