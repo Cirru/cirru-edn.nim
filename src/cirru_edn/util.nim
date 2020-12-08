@@ -113,5 +113,5 @@ proc toCirruEdn*(v: JsonNode): CirruEdnValue =
     for key, value in v:
       let keyContent = CirruEdnValue(kind: crEdnString, stringVal: key)
       let value = toCirruEdn(value)
-      table.add(keyContent, value)
+      table[keyContent] = value
     return CirruEdnValue(kind: crEdnMap, mapVal: table)

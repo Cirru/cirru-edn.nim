@@ -7,6 +7,7 @@ import sets
 import options
 
 import cirru_parser
+import cirru_writer
 
 import cirru_edn/types
 import cirru_edn/format
@@ -114,3 +115,80 @@ proc parseEdnFromStr*(code: string): CirruEdnValue =
           raise newException(EdnInvalidError, "Unknown operation")
       of cirruSeq:
         raise newException(EdnInvalidError, "does not support expression as command")
+
+proc transformToWriter(xs: CirruNode): CirruWriterNode =
+  case xs.kind
+  of cirruSeq:
+    var buffer = CirruWriterNode(kind: writerList, list: @[])
+    for item in xs.list:
+      buffer.list.add item.transformToWriter
+    buffer
+  of cirruString:
+    CirruWriterNode(kind: writerItem, item: xs.text)
+
+proc transformToWriter(xs: CirruEdnValue): CirruWriterNode =
+  case xs.kind
+    of crEdnNil:
+      CirruWriterNode(kind: writerItem, item: "nil")
+    of crEdnBool:
+      CirruWriterNode(kind: writerItem, item: $xs.boolVal)
+    of crEdnNumber:
+      CirruWriterNode(kind: writerItem, item: $xs.numberVal)
+    of crEdnString:
+      let str = if match(xs.stringVal, re"^[\w\d\-_>\:\,\$\&\%\*\\\/\?\~\+]*$"):
+        "|" & xs.stringVal
+      else:
+        "\"|" & xs.stringVal.escape & "\""
+      CirruWriterNode(kind: writerItem, item: str)
+    of crEdnKeyword:
+      CirruWriterNode(kind: writerItem, item: ":" & $xs.keywordVal)
+    of crEdnVector:
+      var buffer = CirruWriterNode(kind: writerList, list: @[])
+      buffer.list.add CirruWriterNode(kind: writerItem, item: "[]")
+      for item in xs.vectorVal:
+        buffer.list.add item.transformToWriter
+      buffer
+
+    of crEdnList:
+      var buffer = CirruWriterNode(kind: writerList, list: @[])
+      buffer.list.add CirruWriterNode(kind: writerItem, item: "list")
+      for item in xs.listVal:
+        buffer.list.add item.transformToWriter
+      buffer
+
+    of crEdnSet:
+      var buffer = CirruWriterNode(kind: writerList, list: @[])
+      buffer.list.add CirruWriterNode(kind: writerItem, item: "#{}")
+      for item in xs.setVal:
+        buffer.list.add item.transformToWriter
+      buffer
+
+    of crEdnMap:
+      var buffer = CirruWriterNode(kind: writerList, list: @[])
+      buffer.list.add CirruWriterNode(kind: writerItem, item: "{}")
+      for k, item in xs.mapVal:
+        var pair  = CirruWriterNode(kind: writerList, list: @[])
+        pair.list.add(k.transformToWriter)
+        pair.list.add(item.transformToWriter)
+        buffer.list.add pair
+      buffer
+
+    of crEdnQuotedCirru:
+      var buffer = CirruWriterNode(kind: writerList, list: @[])
+      buffer.list.add CirruWriterNode(kind: writerItem, item: "quote")
+      buffer.list.add xs.quotedVal.transformToWriter
+      buffer
+
+proc formatToCirru*(xs: CirruEdnValue): string =
+  case xs.kind
+  of crEdnNil, crEdnNumber, crEdnString, crEdnBool, crEdnKeyword:
+    let writer0 = CirruWriterNode(kind: writerList, list: @[
+      CirruWriterNode(kind: writerItem, item: "do"),
+      xs.transformToWriter
+    ])
+    # wrap with an extra list since writer handles LINES of expressions
+    let writer1 = CirruWriterNode(kind: writerList, list: @[writer0])
+    writer1.writeCirruCode
+  else:
+    let writer = CirruWriterNode(kind: writerList, list: @[xs.transformToWriter])
+    writer.writeCirruCode()

@@ -1,5 +1,6 @@
 
 import unittest
+import strutils
 import tables
 import sets
 import json
@@ -112,3 +113,32 @@ test "to json":
 
 test "quoted":
   check (parseEdnFromStr("quote $ + 1 2") == CirruEdnValue(kind: crEdnQuotedCirru, quotedVal: parseCirru("+ 1 2").first.get))
+
+let mixedExample = """
+{}
+  |b $ {} (|c |d)
+  |a $ [] 1.0 2.0
+"""
+
+let arrayExample = """
+[] 1.0
+  [] 2.0
+    [] 3.0 ([] 4.0) 5.0
+    , 6.0
+  , 7.0
+"""
+
+let quotedExample = """
+{} $ :a (quote $ def a 1)
+"""
+
+test "write":
+  check formatToCirru(toCirruEdn(%*{"a": [1.0, 2.0], "b": {"c": "d"}})).strip == mixedExample.strip
+  check formatToCirru(toCirruEdn(%*[1,2, "3", {}])).strip == "[] 1.0 2.0 |3 $ {}"
+  check formatToCirru(toCirruEdn(%*[1, [2, [3, [4], 5], 6], 7])).strip == arrayExample.strip
+  check formatToCirru(toCirruEdn(%* true)).strip == "do true"
+  check formatToCirru(toCirruEdn(%* 1)).strip == "do 1.0"
+  check formatToCirru(toCirruEdn(%* "a")).strip == "do |a"
+  check formatToCirru(toCirruEdn(%* ":a")).strip == "do |:a"
+
+  check parseEdnFromStr(quotedExample).formatToCirru.strip == quotedExample.strip
