@@ -7,7 +7,7 @@ Cirru EDN in Nim
 ### Usage
 
 ```nim
-requires "https://github.com/Cirru/cirru-edn.nim#v0.3.0"
+requires "https://github.com/Cirru/cirru-edn.nim#v0.3.7"
 ```
 
 ```nim
@@ -41,6 +41,7 @@ of crEdnList: # ...
 of crEdnMap: # ...
 
 formatToCirru(x) # returns string
+formatToCirru(x, true) # turn on useInline option
 ```
 
 ### License
