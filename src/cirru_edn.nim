@@ -179,7 +179,7 @@ proc transformToWriter(xs: CirruEdnValue): CirruWriterNode =
       buffer.list.add xs.quotedVal.transformToWriter
       buffer
 
-proc formatToCirru*(xs: CirruEdnValue): string =
+proc formatToCirru*(xs: CirruEdnValue, useInline: bool = false): string =
   case xs.kind
   of crEdnNil, crEdnNumber, crEdnString, crEdnBool, crEdnKeyword:
     let writer0 = CirruWriterNode(kind: writerList, list: @[
@@ -188,7 +188,7 @@ proc formatToCirru*(xs: CirruEdnValue): string =
     ])
     # wrap with an extra list since writer handles LINES of expressions
     let writer1 = CirruWriterNode(kind: writerList, list: @[writer0])
-    writer1.writeCirruCode
+    writer1.writeCirruCode((useInline: useInline))
   else:
     let writer = CirruWriterNode(kind: writerList, list: @[xs.transformToWriter])
-    writer.writeCirruCode()
+    writer.writeCirruCode((useInline: useInline))
