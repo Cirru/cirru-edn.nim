@@ -135,10 +135,7 @@ proc transformToWriter(xs: CirruEdnValue): CirruWriterNode =
     of crEdnNumber:
       CirruWriterNode(kind: writerItem, item: $xs.numberVal)
     of crEdnString:
-      let str = if match(xs.stringVal, re"^[\w\d\-_>\:\,\$\&\%\*\\\/\?\~\+]*$"):
-        "|" & xs.stringVal
-      else:
-        "\"|" & xs.stringVal.escape & "\""
+      let str = "|" & xs.stringVal
       CirruWriterNode(kind: writerItem, item: str)
     of crEdnKeyword:
       CirruWriterNode(kind: writerItem, item: ":" & $xs.keywordVal)

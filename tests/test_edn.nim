@@ -132,6 +132,11 @@ let quotedExample = """
 {} $ :a (quote $ def a 1)
 """
 
+let stringExample = """
+{} ("|some chars:,$()\"aaa" "|with |() a")
+  |simple |simple
+"""
+
 test "write":
   check formatToCirru(toCirruEdn(%*{"a": [1.0, 2.0], "b": {"c": "d"}})).strip == mixedExample.strip
   check formatToCirru(toCirruEdn(%*[1,2, "3", {}])).strip == "[] 1.0 2.0 |3 $ {}"
@@ -142,3 +147,5 @@ test "write":
   check formatToCirru(toCirruEdn(%* ":a")).strip == "do |:a"
 
   check parseEdnFromStr(quotedExample).formatToCirru.strip == quotedExample.strip
+
+  check formatToCirru(toCirruEdn(%*{"some chars:,$()\"aaa": "with |() a", "simple": "simple"})).strip == stringExample.strip
