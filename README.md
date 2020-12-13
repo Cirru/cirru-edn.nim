@@ -7,7 +7,7 @@ Cirru EDN in Nim
 ### Usage
 
 ```nim
-requires "https://github.com/Cirru/cirru-edn.nim#v0.3.7"
+requires "https://github.com/Cirru/cirru-edn.nim#v0.3.8"
 ```
 
 ```nim
