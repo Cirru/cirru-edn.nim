@@ -2,7 +2,7 @@
 Cirru EDN in Nim
 ----
 
-> Load Cirru EDN in Nim
+> Load Cirru EDN in Nim.
 
 ### Usage
 
@@ -42,6 +42,66 @@ of crEdnMap: # ...
 
 formatToCirru(x) # returns string
 formatToCirru(x, true) # turn on useInline option
+```
+
+### Syntax
+
+Cirru EDN is based on [Cirru Text Syntax](http://text.cirru.org/), on top of that is some syntax for EDN:
+
+- Lists and vectors:
+
+```cirru
+[] 1 2 3
+```
+
+```cirru
+list 1 2 3
+```
+
+- HashMaps:
+
+```cirru
+{}
+  :a 1
+  :b 3
+```
+
+- Sets:
+
+```cirru
+#{} 1 2 3
+```
+
+- Literals, since Cirru use lines for expressions, need `do` for extracting a top value:
+
+```cirru
+do 1
+```
+
+```cirru
+do :k
+```
+
+```cirru
+do nil
+```
+
+- Strings, needs to be prefixed with a `|`(or a single escaped `"`):
+
+```cirru
+do |short
+```
+
+```cirru
+do "|long text"
+```
+
+- Quoted Cirru code(based on types from [Cirru Parser](https://github.com/Cirru/parser.nim)):
+
+```cirru
+{}
+  :code $ quote
+    def a (x y) (+ x y)
 ```
 
 ### License
