@@ -11,82 +11,79 @@ import cirru_parser
 import cirru_edn
 
 test "data gen":
-  check crEdn(true) == CirruEdnValue(kind: crEdnBool, boolVal: true)
-  check crEdn(false) == CirruEdnValue(kind: crEdnBool, boolVal: false)
-  check crEdn() == CirruEdnValue(kind: crEdnNil)
-  check crEdn(1) == CirruEdnValue(kind: crEdnNumber, numberVal: 1)
-  check crEdn("a") == CirruEdnValue(kind: crEdnString, stringVal: "a")
-  check crEdn("a", true) == CirruEdnValue(kind: crEdnKeyword, keywordVal: "a")
-  check crEdn(@[crEdn(1)]) == CirruEdnValue(kind: crEdnVector, vectorVal: @[ crEdn(1) ])
-  check crEdn(@[crEdn(@[])]) == CirruEdnValue(kind: crEdnVector, vectorVal: @[ crEdn(@[]) ])
-  check crEdn(@[crEdn(1)], true) == CirruEdnValue(kind: crEdnList, listVal: @[ crEdn(1) ])
+  check genCrEdn(true) == CirruEdnValue(kind: crEdnBool, boolVal: true)
+  check genCrEdn(false) == CirruEdnValue(kind: crEdnBool, boolVal: false)
+  check genCrEdn() == CirruEdnValue(kind: crEdnNil)
+  check genCrEdn(1) == CirruEdnValue(kind: crEdnNumber, numberVal: 1)
+  check genCrEdn("a") == CirruEdnValue(kind: crEdnString, stringVal: "a")
+  check genCrEdnKeyword("a") == CirruEdnValue(kind: crEdnKeyword, keywordVal: "a")
+  check genCrEdnVector(genCrEdn(1)) == CirruEdnValue(kind: crEdnVector, vectorVal: @[ CirruEdnValue(kind: crEdnNumber, numberVal: 1) ])
+  check genCrEdnVector(genCrEdnVector()) == CirruEdnValue(kind: crEdnVector, vectorVal: @[CirruEdnValue(kind: crEdnVector, vectorVal: @[])])
+  check genCrEdnList(genCrEdn(1)) == CirruEdnValue(kind: crEdnList, listVal: @[ CirruEdnValue(kind: crEdnNumber, numberVal: 1) ])
 
 
 test "gen table":
-  var unitTable = initTable[CirruEdnValue, CirruEdnValue]()
-  unitTable[crEdn(1)] = crEdn(2)
-  check crEdn(unitTable) == CirruEdnValue(kind: crEdnMap, mapVal: unitTable)
+  check genCrEdnMap() == CirruEdnValue(kind: crEdnMap, mapVal: initTable[CirruEdnValue, CirruEdnValue]())
 
 test "parse literals":
-  check parseEdnFromStr("do true") == crEdn(true)
-  check parseEdnFromStr("do false") == crEdn(false)
-  check parseEdnFromStr("do nil") == crEdn()
+  check parseCirruEdn("do true") == genCrEdn(true)
+  check parseCirruEdn("do false") == genCrEdn(false)
+  check parseCirruEdn("do nil") == genCrEdn()
 
-  check parseEdnFromStr("do 1") == crEdn(1)
-  check parseEdnFromStr("do |a") == crEdn("a")
-  check parseEdnFromStr("do \"\\\"a\"") == crEdn("a")
-  check parseEdnFromStr("do :k") == crEdn("k", true)
+  check parseCirruEdn("do 1") == genCrEdn(1)
+  check parseCirruEdn("do |a") == genCrEdn("a")
+  check parseCirruEdn("do \"\\\"a\"") == genCrEdn("a")
+  check parseCirruEdn("do :k") == genCrEdnKeyword("k")
 
 test "parse vector":
-  check parseEdnFromStr("[]") == crEdn(@[])
-  check parseEdnFromStr("list") == crEdn(@[], true)
-  check parseEdnFromStr("[] 1") == crEdn(@[ crEdn(1) ])
-  check parseEdnFromStr("[] $ []") == crEdn(@[ crEdn(@[]) ])
+  check parseCirruEdn("[]") == genCrEdnVector()
+  check parseCirruEdn("list") == genCrEdnList()
+  check parseCirruEdn("[] 1") == genCrEdnVector( genCrEdn(1) )
+  check parseCirruEdn("[] $ []") == genCrEdnVector( genCrEdnVector() )
 
   var t = initTable[CirruEdnValue, CirruEdnValue]()
-  check parseEdnFromStr("[] $ {}") == crEdn(@[ crEdn(t) ])
+  check parseCirruEdn("[] $ {}") == genCrEdnVector( genCrEdnMap() )
 
 test "parse map":
-  var t = initTable[CirruEdnValue, CirruEdnValue]()
-  check parseEdnFromStr("{}") == crEdn(t)
-  t[crEdn("k", true)] = crEdn("v")
-  check parseEdnFromStr("{} (:k |v)") == crEdn(t)
-  t[crEdn("arr", true)] = crEdn(@[crEdn(1), crEdn(2), crEdn(3)])
-  check parseEdnFromStr("{} (:k |v) (:arr $ [] 1 2 3)") == crEdn(t)
+  check parseCirruEdn("{}") == genCrEdnMap()
+  check parseCirruEdn("{} (:k |v)") == genCrEdnMap(genCrEdnKeyword("k"), genCrEdn("v"))
+  check parseCirruEdn("{} (:k |v) (:arr $ [] 1 2 3)") ==
+    genCrEdnMap(genCrEdnKeyword("k"), genCrEdn("v"),
+                genCrEdnKeyword("arr"), genCrEdnVector(genCrEdn(1), genCrEdn(2), genCrEdn(3)))
 
 test "parse set":
-  check parseEdnFromStr("set") == crEdn(HashSet[CirruEdnValue]())
-  check parseEdnFromStr("set 1 :a") == crEdn(toHashSet(@[crEdn(1), crEdn("a", true) ]))
-  check parseEdnFromStr("#{} 1 :a") == crEdn(toHashSet(@[crEdn(1), crEdn("a", true) ]))
+  check parseCirruEdn("set") == genCrEdnSet()
+  check parseCirruEdn("set 1 :a") == genCrEdnSet(genCrEdn(1), genCrEdnKeyword("a"))
+  check parseCirruEdn("#{} 1 :a") == genCrEdnSet(genCrEdn(1), genCrEdnKeyword("a"))
 
 test "iterable":
-  let vectorData = parseEdnFromStr("[] 1 2 3 4")
+  let vectorData = parseCirruEdn("[] 1 2 3 4")
   var counted: int = 0
   for i in vectorData:
     counted = counted + 1
   check (counted == 4)
 
-  let listData = parseEdnFromStr("list 1 2 3 4")
+  let listData = parseCirruEdn("list 1 2 3 4")
   var counted2: int = 0
   for i in listData:
     counted2 = counted2 + 1
   check (counted2 == 4)
 
-  let mapData = parseEdnFromStr("{} (:a 1) (:b 2)")
+  let mapData = parseCirruEdn("{} (:a 1) (:b 2)")
   var counted3 = 0
   for k, v in mapData:
     counted3 = counted3 + 1
   check (counted3 == 2)
 
 test "iterate data in map":
-  let t1 = parseEdnFromStr("[] 1 2 3").map(proc(x: CirruEdnValue): float =
+  let t1 = parseCirruEdn("[] 1 2 3").map(proc(x: CirruEdnValue): float =
     case x.kind:
     of crEdnNumber: x.numberVal
     else: 0
   )
   check (t1 == @[1.0, 2, 3])
 
-  let t2 = parseEdnFromStr("{} (:a 1) (:b 2)").mapPairs(proc(p: tuple[k: CirruEdnValue, v: CirruEdnValue]): float =
+  let t2 = parseCirruEdn("{} (:a 1) (:b 2)").mapPairs(proc(p: tuple[k: CirruEdnValue, v: CirruEdnValue]): float =
     case p.v.kind:
     of crEdnNumber: p.v.numberVal
     else: 0.0
@@ -95,24 +92,24 @@ test "iterate data in map":
 
 test "parse large file":
   let content = readFile("tests/compact.cirru")
-  let data = parseEdnFromStr(content)
+  let data = parseCirruEdn(content)
   let generated = $ data # generates simple EDN
 
   let expected = readFile("tests/compact.edn")
   check (generated == expected)
 
 test "utils":
-  let dict = parseEdnFromStr("{} (:a 1)")
-  check (dict.contains(crEdn("a", true)) == true)
-  check (dict.get(crEdn("a", true)) == crEdn(1))
-  check (dict.get(crEdn("b", true)) == crEdn())
+  let dict = parseCirruEdn("{} (:a 1)")
+  check (dict.contains(genCrEdnKeyword("a")) == true)
+  check (dict.get(genCrEdnKeyword("a")) == genCrEdn(1))
+  check (dict.get(genCrEdnKeyword("b")) == genCrEdn())
 
 test "to json":
-  check (%*{"a": [1.0, 2.0]} == toJson(parseEdnFromStr("{} (:a ([] 1 2))")))
-  check (toCirruEdn(%*{"a": [1.0, 2.0]}) == parseEdnFromStr("{} (|a ([] 1 2))"))
+  check (%*{"a": [1.0, 2.0]} == toJson(parseCirruEdn("{} (:a ([] 1 2))")))
+  check (toCirruEdn(%*{"a": [1.0, 2.0]}) == parseCirruEdn("{} (|a ([] 1 2))"))
 
 test "quoted":
-  check (parseEdnFromStr("quote $ + 1 2") == CirruEdnValue(kind: crEdnQuotedCirru, quotedVal: parseCirru("+ 1 2").first.get))
+  check (parseCirruEdn("quote $ + 1 2") == CirruEdnValue(kind: crEdnQuotedCirru, quotedVal: parseCirru("+ 1 2").first.get))
 
 let mixedExample = """
 {}
@@ -146,6 +143,6 @@ test "write":
   check formatToCirru(toCirruEdn(%* "a")).strip == "do |a"
   check formatToCirru(toCirruEdn(%* ":a")).strip == "do |:a"
 
-  check parseEdnFromStr(quotedExample).formatToCirru.strip == quotedExample.strip
+  check parseCirruEdn(quotedExample).formatToCirru.strip == quotedExample.strip
 
   check formatToCirru(toCirruEdn(%*{"some chars:,$()\"aaa": "with |() a", "simple": "simple"})).strip == stringExample.strip
