@@ -14,9 +14,10 @@ import cirru_edn/format
 import cirru_edn/gen
 import cirru_edn/util
 
-export crEdn, CirruEdnValue, CirruEdnKind, `$`, `==`, `!=`
+export CirruEdnValue, CirruEdnKind, `$`, `==`, `!=`
 export EdnEmptyError, EdnInvalidError, EdnOpError
 export map, mapPairs, items, pairs, hash, get, contains, toJson, toCirruEdn
+export genCrEdn, genCrEdnKeyword, genCrEdnList, genCrEdnVector, genCrEdnSet, genCrEdnMap
 
 proc mapExpr(tree: CirruNode): CirruEdnValue =
 
@@ -77,7 +78,7 @@ proc mapExpr(tree: CirruNode): CirruEdnValue =
           raise newException(EdnInvalidError, "quote requires only 1 item")
         return CirruEdnValue(kind: crEdnQuotedCirru, quotedVal: tree[1].get)
 
-proc parseEdnFromStr*(code: string): CirruEdnValue =
+proc parseCirruEdn*(code: string): CirruEdnValue =
   let tree = parseCirru code
 
   case tree.kind:

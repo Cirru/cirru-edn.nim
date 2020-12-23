@@ -7,18 +7,16 @@ Cirru EDN in Nim
 ### Usage
 
 ```nim
-requires "https://github.com/Cirru/cirru-edn.nim#v0.3.8"
+requires "https://github.com/Cirru/cirru-edn.nim#v0.4.0"
 ```
 
 ```nim
 import cirru_edn
 
-parseEdnFromStr("do 1") # gets 1
-parseEdnFromStr("[] 1 2 3")
+parseCirruEdn("do 1") # gets 1
+parseCirruEdn("[] 1 2 3")
 
-crEdn(1)
-
-let x = crEdn(@[1])
+let x = genCrEdnList(genCrEdn(1))
 
 echo $x # stringify
 ```
@@ -28,7 +26,7 @@ type detection:
 ```nim
 import cirru_edn
 
-let x = parseEdnFromStr("do 1") # gets 1
+let x = parseCirruEdn("do 1") # gets 1
 
 case x.kind:
 of crEdnNil: # ...
@@ -42,6 +40,20 @@ of crEdnMap: # ...
 
 formatToCirru(x) # returns string
 formatToCirru(x, true) # turn on useInline option
+```
+
+Functions for generating data:
+
+```nim
+genCrEdn()
+genCrEdn(true)
+genCrEdn(1)
+genCrEdn("a")
+genCrEdnKeyword("k")
+genCrEdnList(genCrEdn(1), genCrEdn(1))
+genCrEdnVector(genCrEdn(1), genCrEdn(1))
+genCrEdnSet(genCrEdn(1), genCrEdn(2))
+genCrEdnMap(genCrEdnKeyword("a"), genCrEdn(2)) # even number of arguments
 ```
 
 ### Syntax
