@@ -1,5 +1,4 @@
 
-import re
 import strutils
 import sequtils
 import tables
@@ -13,6 +12,7 @@ import cirru_edn/types
 import cirru_edn/format
 import cirru_edn/gen
 import cirru_edn/util
+import cirru_edn/str_util
 
 export CirruEdnValue, CirruEdnKind, `$`, `==`, `!=`
 export EdnEmptyError, EdnInvalidError, EdnOpError
@@ -39,7 +39,7 @@ proc mapExpr(tree: CirruNode): CirruEdnValue =
         return CirruEdnValue(kind: crEdnString, stringVal: tree.text[1..tree.text.high], line: tree.line, column: tree.column)
       elif tree.text[0] == '"':
         return CirruEdnValue(kind: crEdnString, stringVal: tree.text[1..tree.text.high], line: tree.line, column: tree.column)
-      elif match($(tree.text[0]), re"\d+(.\d+)?"):
+      elif tree.text.matchesFloat():
         return CirruEdnValue(kind: crEdnNumber, numberVal: parseFloat(tree.text), line: tree.line, column: tree.column)
       else:
         echo tree.text
