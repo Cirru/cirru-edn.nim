@@ -22,8 +22,8 @@ export genCrEdn, genCrEdnKeyword, genCrEdnList, genCrEdnVector, genCrEdnSet, gen
 proc mapExpr(tree: CirruNode): CirruEdnValue =
 
   case tree.kind:
-  of cirruString:
-    case tree.text:
+  of cirruToken:
+    case tree.token:
     of "true":
       return CirruEdnValue(kind: crEdnBool, boolVal: true, line: tree.line, column: tree.column)
     of "false":
@@ -31,26 +31,26 @@ proc mapExpr(tree: CirruNode): CirruEdnValue =
     of "nil":
       return CirruEdnValue(kind: crEdnNil)
     else:
-      if tree.text == "":
+      if tree.token == "":
         raise newException(EdnEmptyError, "\"\" is not valid data ")
-      elif tree.text[0] == ':':
-        return CirruEdnValue(kind: crEdnKeyword, keywordVal: tree.text[1..tree.text.high], line: tree.line, column: tree.column)
-      elif tree.text[0] == '|':
-        return CirruEdnValue(kind: crEdnString, stringVal: tree.text[1..tree.text.high], line: tree.line, column: tree.column)
-      elif tree.text[0] == '"':
-        return CirruEdnValue(kind: crEdnString, stringVal: tree.text[1..tree.text.high], line: tree.line, column: tree.column)
-      elif tree.text.matchesFloat():
-        return CirruEdnValue(kind: crEdnNumber, numberVal: parseFloat(tree.text), line: tree.line, column: tree.column)
+      elif tree.token[0] == ':':
+        return CirruEdnValue(kind: crEdnKeyword, keywordVal: tree.token[1..tree.token.high], line: tree.line, column: tree.column)
+      elif tree.token[0] == '|':
+        return CirruEdnValue(kind: crEdnString, stringVal: tree.token[1..tree.token.high], line: tree.line, column: tree.column)
+      elif tree.token[0] == '"':
+        return CirruEdnValue(kind: crEdnString, stringVal: tree.token[1..tree.token.high], line: tree.line, column: tree.column)
+      elif tree.token.matchesFloat():
+        return CirruEdnValue(kind: crEdnNumber, numberVal: parseFloat(tree.token), line: tree.line, column: tree.column)
       else:
-        echo tree.text
+        echo tree.token
         raise newException(EdnInvalidError, "Unknown data")
-  of cirruSeq:
+  of cirruList:
     if tree.isEmpty:
       raise newException(EdnInvalidError, "[] is not a valid expression")
     let firstNode = tree.first.get
-    if firstNode.kind == cirruSeq:
+    if firstNode.kind == cirruList:
       raise newException(EdnInvalidError, "nested expr is not supported as operator")
-    case firstNode.text:
+    case firstNode.token:
       of "[]":
         let body: seq[CirruNode] = tree[1..^1]
         return CirruEdnValue(kind: crEdnVector, vectorVal: body.map(mapExpr), line: tree.line, column: tree.column)
@@ -63,11 +63,11 @@ proc mapExpr(tree: CirruNode): CirruEdnValue =
       of "{}":
         var dict = initTable[CirruEdnValue, CirruEdnValue]()
         for k, pair in tree[1..^1]:
-          if pair.kind == cirruString:
+          if pair.kind == cirruToken:
             echo $pair
             raise newException(EdnInvalidError, "Must be pairs in a map")
           if pair.len != 2:
-            echo $pair
+            echo $pair, " ", pair.len
             raise newException(EdnInvalidError, "Must be pair of 2 in a map")
           let k = mapExpr pair[0].get
           let v = mapExpr pair[1].get
@@ -82,22 +82,22 @@ proc parseCirruEdn*(code: string): CirruEdnValue =
   let tree = parseCirru code
 
   case tree.kind:
-  of cirruString:
+  of cirruToken:
     raise newException(EdnInvalidError, "does not handle raw string from Cirru parser")
-  of cirruSeq:
+  of cirruList:
     if tree.len == 0:
       raise newException(EdnEmptyError, "[] represents no value")
     elif tree.len > 1:
       raise newException(EdnInvalidError, "has too many expressions")
     let dataNode = tree[0].get
     case dataNode.kind:
-    of cirruString:
+    of cirruToken:
       raise newException(EdnInvalidError, "does not handle raw string from Cirru parser")
-    of cirruSeq:
+    of cirruList:
       let firstNode = dataNode[0].get
       case firstNode.kind:
-      of cirruString:
-        case firstNode.text:
+      of cirruToken:
+        case firstNode.token:
         of "do":
           if dataNode.len == 2:
             return mapExpr(dataNode[1].get)
@@ -112,20 +112,20 @@ proc parseCirruEdn*(code: string): CirruEdnValue =
         of "quote":
           return mapExpr(dataNode)
         else:
-          echo "Node text: ", escape(firstNode.text)
+          echo "Node text: ", escape(firstNode.token)
           raise newException(EdnInvalidError, "Unknown operation")
-      of cirruSeq:
+      of cirruList:
         raise newException(EdnInvalidError, "does not support expression as command")
 
 proc transformToWriter(xs: CirruNode): CirruWriterNode =
   case xs.kind
-  of cirruSeq:
+  of cirruList:
     var buffer = CirruWriterNode(kind: writerList, list: @[])
     for item in xs.list:
       buffer.list.add item.transformToWriter
     buffer
-  of cirruString:
-    CirruWriterNode(kind: writerItem, item: xs.text)
+  of cirruToken:
+    CirruWriterNode(kind: writerItem, item: xs.token)
 
 proc transformToWriter(xs: CirruEdnValue): CirruWriterNode =
   case xs.kind
