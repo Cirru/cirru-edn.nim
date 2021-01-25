@@ -39,10 +39,10 @@ type
 
 proc hash*(value: CirruNode): Hash =
   case value.kind:
-  of cirruString:
-    return hash(value.text)
-  of cirruSeq:
-    result = hash("cirruSeq:")
+  of cirruToken:
+    return hash(value.token)
+  of cirruList:
+    result = hash("cirruList:")
     for x in value:
       result = result !& hash(x)
     result = !$ result
