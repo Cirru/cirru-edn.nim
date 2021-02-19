@@ -126,7 +126,8 @@ let arrayExample = """
 """
 
 let quotedExample = """
-{} $ :a (quote $ def a 1)
+{} $ :a
+  quote $ def a 1
 """
 
 let stringExample = """
