@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.4.4"
+version       = "0.4.5"
 author        = "jiyinyiyong"
 description   = "Cirru EDN loader in Nim"
 license       = "MIT"
@@ -11,7 +11,7 @@ srcDir        = "src"
 
 requires "nim >= 1.2.6"
 requires "cirru_parser >= 0.3.0"
-requires "https://github.com/Cirru/writer.nim#v0.1.2"
+requires "cirru_writer >= 0.1.3"
 
 task t, "Runs the test suite":
   exec "nim c  --hints:off -r tests/test_edn.nim"
