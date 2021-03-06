@@ -119,15 +119,15 @@ test "quoted":
 let mixedExample = """
 {}
   |b $ {} (|c |d)
-  |a $ [] 1.0 2.0
+  |a $ [] 1 2
 """
 
 let arrayExample = """
-[] 1.0
-  [] 2.0
-    [] 3.0 ([] 4.0) 5.0
-    , 6.0
-  , 7.0
+[] 1
+  [] 2
+    [] 3 ([] 4) 5
+    , 6
+  , 7
 """
 
 let quotedExample = """
@@ -142,10 +142,10 @@ let stringExample = """
 
 test "write":
   check formatToCirru(toCirruEdn(%*{"a": [1.0, 2.0], "b": {"c": "d"}})).strip == mixedExample.strip
-  check formatToCirru(toCirruEdn(%*[1,2, "3", {}])).strip == "[] 1.0 2.0 |3 $ {}"
+  check formatToCirru(toCirruEdn(%*[1,2, "3", {}])).strip == "[] 1 2 |3 $ {}"
   check formatToCirru(toCirruEdn(%*[1, [2, [3, [4], 5], 6], 7])).strip == arrayExample.strip
   check formatToCirru(toCirruEdn(%* true)).strip == "do true"
-  check formatToCirru(toCirruEdn(%* 1)).strip == "do 1.0"
+  check formatToCirru(toCirruEdn(%* 1)).strip == "do 1"
   check formatToCirru(toCirruEdn(%* "a")).strip == "do |a"
   check formatToCirru(toCirruEdn(%* ":a")).strip == "do |:a"
 
@@ -155,14 +155,14 @@ test "write":
 
 let recordExample = """
 %{} Cat (color :red)
-  weight 100.0
+  weight 100
 """
 
 let recordExample2 = """
 %{} Cat (color :red)
-  owner $ %{} Person (:age 20.0)
+  owner $ %{} Person (:age 20)
     :name |Chen
-  weight 100.0
+  weight 100
 """
 
 test "write record":

@@ -5,6 +5,7 @@ import tables
 import sets
 import options
 import algorithm
+import math
 
 import cirru_parser
 import cirru_writer
@@ -168,7 +169,9 @@ proc transformToWriter(xs: CirruEdnValue): CirruWriterNode =
     of crEdnBool:
       CirruWriterNode(kind: writerItem, item: $xs.boolVal)
     of crEdnNumber:
-      CirruWriterNode(kind: writerItem, item: $xs.numberVal)
+      let v = xs.numberVal
+      let n = if v.trunc == v: $(v.int) else: $v
+      CirruWriterNode(kind: writerItem, item: n)
     of crEdnString:
       let str = "|" & xs.stringVal
       CirruWriterNode(kind: writerItem, item: str)
