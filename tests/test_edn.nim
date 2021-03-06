@@ -56,6 +56,11 @@ test "parse set":
   check parseCirruEdn("set 1 :a") == genCrEdnSet(genCrEdn(1), genCrEdnKeyword("a"))
   check parseCirruEdn("#{} 1 :a") == genCrEdnSet(genCrEdn(1), genCrEdnKeyword("a"))
 
+test "parse record":
+  check parseCirruEdn("%{} Cat (color :red) (weight 100)") ==
+    genCrEdnRecord("Cat", genCrEdn("color"), genCrEdnKeyword("red"),
+                    genCrEdn("weight"), genCrEdn(100))
+
 test "iterable":
   let vectorData = parseCirruEdn("[] 1 2 3 4")
   var counted: int = 0
@@ -147,3 +152,22 @@ test "write":
   check parseCirruEdn(quotedExample).formatToCirru.strip == quotedExample.strip
 
   check formatToCirru(toCirruEdn(%*{"some chars:,$()\"aaa": "with |() a", "simple": "simple"})).strip == stringExample.strip
+
+let recordExample = """
+%{} Cat (color :red)
+  weight 100.0
+"""
+
+let recordExample2 = """
+%{} Cat (color :red)
+  owner $ %{} Person (:age 20.0)
+    :name |Chen
+  weight 100.0
+"""
+
+test "write record":
+  let c0 = genCrEdnRecord("Cat", genCrEdn("color"), genCrEdnKeyword("red"),
+                            genCrEdn("weight"), genCrEdn(100))
+  check formatToCirru(c0).strip == recordExample.strip
+
+  check formatToCirru(parseCirruEdn(recordExample2)).strip == recordExample2.strip

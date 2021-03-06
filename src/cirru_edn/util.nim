@@ -87,6 +87,12 @@ proc toJson*(x: CirruEdnValue): JsonNode =
         raise newException(EdnOpError, "required string keys in JObject")
     return JsonNode(kind: JObject, fields: fields)
 
+  of crEdnRecord:
+    var fields: OrderedTable[string, JsonNode]
+    for idx, field in x.recordFields:
+      fields[field] = toJson(x.recordValues[idx])
+    return JsonNode(kind: JObject, fields: fields)
+
   of crEdnQuotedCirru:
     return toJson(x.quotedVal)
 
