@@ -4,6 +4,8 @@ import sequtils
 import tables
 import sets
 import options
+import algorithm
+import math
 
 import cirru_parser
 import cirru_writer
@@ -17,7 +19,7 @@ import cirru_edn/str_util
 export CirruEdnValue, CirruEdnKind, `$`, `==`, `!=`
 export EdnEmptyError, EdnInvalidError, EdnOpError
 export map, mapPairs, items, pairs, hash, get, contains, toJson, toCirruEdn
-export genCrEdn, genCrEdnKeyword, genCrEdnList, genCrEdnVector, genCrEdnSet, genCrEdnMap
+export genCrEdn, genCrEdnKeyword, genCrEdnList, genCrEdnVector, genCrEdnSet, genCrEdnMap, genCrEdnRecord
 
 proc mapExpr(tree: CirruNode): CirruEdnValue =
 
@@ -73,6 +75,37 @@ proc mapExpr(tree: CirruNode): CirruEdnValue =
           let v = mapExpr pair[1].get
           dict[k] = v
         return CirruEdnValue(kind: crEdnMap, mapVal: dict, line: tree.line, column: tree.column)
+      of "%{}":
+        var pairs: seq[RecordInPair]
+        let nameNode = tree[1].get()
+        if nameNode.kind != cirruToken:
+          raise newException(EdnInvalidError, "Expected a token")
+        for pair in tree[2..^1]:
+          if pair.kind == cirruToken:
+            echo $pair
+            raise newException(EdnInvalidError, "Must be pairs in a map")
+          if pair.len != 2:
+            echo $pair, " ", pair.len
+            raise newException(EdnInvalidError, "Must be pair of 2 in a map")
+          let kNode = pair[0].get
+          if kNode.kind != cirruToken:
+            echo kNode
+            raise newException(EdnInvalidError, "Expected a token")
+          let v = mapExpr pair[1].get
+          pairs.add((kNode.token, v))
+
+        pairs.sort(recordFieldOrder)
+
+        var fields: seq[string]
+        var values: seq[CirruEdnValue]
+        for pair in pairs:
+          fields.add pair.k
+          values.add pair.v
+        return CirruEdnValue(
+          kind: crEdnRecord, recordName: nameNode.token,
+          recordFields: fields, recordValues: values,
+        )
+
       of "quote":
         if tree.len != 2:
           raise newException(EdnInvalidError, "quote requires only 1 item")
@@ -105,6 +138,8 @@ proc parseCirruEdn*(code: string): CirruEdnValue =
           return mapExpr(dataNode)
         of "{}":
           return mapExpr(dataNode)
+        of "%{}":
+          return mapExpr(dataNode)
         of "list":
           return mapExpr(dataNode)
         of "set", "#{}":
@@ -134,7 +169,9 @@ proc transformToWriter(xs: CirruEdnValue): CirruWriterNode =
     of crEdnBool:
       CirruWriterNode(kind: writerItem, item: $xs.boolVal)
     of crEdnNumber:
-      CirruWriterNode(kind: writerItem, item: $xs.numberVal)
+      let v = xs.numberVal
+      let n = if v.trunc == v: $(v.int) else: $v
+      CirruWriterNode(kind: writerItem, item: n)
     of crEdnString:
       let str = "|" & xs.stringVal
       CirruWriterNode(kind: writerItem, item: str)
@@ -165,9 +202,20 @@ proc transformToWriter(xs: CirruEdnValue): CirruWriterNode =
       var buffer = CirruWriterNode(kind: writerList, list: @[])
       buffer.list.add CirruWriterNode(kind: writerItem, item: "{}")
       for k, item in xs.mapVal:
-        var pair  = CirruWriterNode(kind: writerList, list: @[])
+        var pair = CirruWriterNode(kind: writerList, list: @[])
         pair.list.add(k.transformToWriter)
         pair.list.add(item.transformToWriter)
+        buffer.list.add pair
+      buffer
+
+    of crEdnRecord:
+      var buffer = CirruWriterNode(kind: writerList, list: @[])
+      buffer.list.add CirruWriterNode(kind: writerItem, item: "%{}")
+      buffer.list.add CirruWriterNode(kind: writerItem, item: xs.recordName)
+      for idx, field in xs.recordFields:
+        var pair = CirruWriterNode(kind: writerList, list: @[])
+        pair.list.add(CirruWriterNode(kind: writerItem, item: field))
+        pair.list.add(xs.recordValues[idx].transformToWriter)
         buffer.list.add pair
       buffer
 

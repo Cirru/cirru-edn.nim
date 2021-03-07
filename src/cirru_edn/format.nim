@@ -30,6 +30,18 @@ proc fromTableToString(children: Table[CirruEdnValue, CirruEdnValue]): string =
   tableStr = tableStr & "}"
   return tableStr
 
+proc formRecordToString(name: string, fields: seq[string], values: seq[CirruEdnValue]): string =
+  result = "%{" & name
+  if fields.len != values.len:
+    raise newException(EdnInvalidError, "Expected fields and values has same size")
+  for idx, field in fields:
+    if idx == 0:
+      result &= " "
+    else:
+      result &= ", "
+    result &= field & " " & toString(values[idx])
+  result &= "}"
+
 proc toString*(val: CirruEdnValue): string =
   case val.kind:
     of crEdnBool:
@@ -43,6 +55,7 @@ proc toString*(val: CirruEdnValue): string =
     of crEdnList: fromSeqToString(val.listVal)
     of crEdnSet: fromSetToString(val.setVal)
     of crEdnMap: fromTableToString(val.mapVal)
+    of crEdnRecord: formRecordToString(val.recordName, val.recordFields, val.recordValues)
     of crEdnNil: "nil"
     of crEdnKeyword: ":" & val.keywordVal
     of crEdnQuotedCirru: $(val.quotedVal)

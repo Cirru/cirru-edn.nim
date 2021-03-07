@@ -37,6 +37,7 @@ of crEdnString: # ...
 of crEdnVector: # ...
 of crEdnList: # ...
 of crEdnMap: # ...
+of crEdnRecord: # ...
 
 formatToCirru(x) # returns string
 formatToCirru(x, true) # turn on useInline option
@@ -54,6 +55,7 @@ genCrEdnList(genCrEdn(1), genCrEdn(1))
 genCrEdnVector(genCrEdn(1), genCrEdn(1))
 genCrEdnSet(genCrEdn(1), genCrEdn(2))
 genCrEdnMap(genCrEdnKeyword("a"), genCrEdn(2)) # even number of arguments
+genCrEdnRecord("Demo", genCrEdn("a"), genCrEdn(2)) # odd number of arguments, string keys
 ```
 
 ### Syntax
@@ -76,6 +78,16 @@ list 1 2 3
 {}
   :a 1
   :b 3
+```
+
+- Record:
+
+Record name and record fields are represented in symbols:
+
+```cirru
+%{} Demo
+  a 1
+  b 2
 ```
 
 - Sets:

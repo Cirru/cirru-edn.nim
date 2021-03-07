@@ -16,6 +16,7 @@ type
     crEdnList,
     crEdnSet,
     crEdnMap,
+    crEdnRecord,
     crEdnQuotedCirru,
 
   CirruEdnValue* = object
@@ -31,6 +32,10 @@ type
     of crEdnList: listVal*: seq[CirruEdnValue]
     of crEdnSet: setVal*: HashSet[CirruEdnValue]
     of crEdnMap: mapVal*: Table[CirruEdnValue, CirruEdnValue]
+    of crEdnRecord:
+      recordName*: string
+      recordFields*: seq[string]
+      recordValues*: seq[CirruEdnValue]
     of crEdnQuotedCirru: quotedVal*: CirruNode
 
   EdnEmptyError* = object of ValueError
@@ -64,22 +69,33 @@ proc hash*(value: CirruEdnValue): Hash =
       for idx, x in value.vectorVal:
         result = result !& hash(x)
       result = !$ result
+
     of crEdnList:
       result = hash("list:")
       for idx, x in value.listVal:
         result = result !& hash(x)
       result = !$ result
+
     of crEdnSet:
       result = hash("set:")
       for x in value.setVal.items:
         result = result !& hash(x)
       result = !$ result
+
     of crEdnMap:
       result = hash("map:")
       for k, v in value.mapVal.pairs:
         result = result !& hash(k)
         result = result !& hash(v)
 
+      result = !$ result
+
+    of crEdnRecord:
+      result = hash("record:")
+      result = result !& hash(value.recordName)
+      for idx, field in value.recordFields:
+        result = result !& hash(field)
+        result = result !& hash(value.recordValues[idx])
       result = !$ result
 
     of crEdnQuotedCirru:
@@ -139,6 +155,20 @@ proc `==`*(x, y: CirruEdnValue): bool =
 
       return true
 
+    of crEdnRecord:
+      if x.recordName != y.recordName:
+        return false
+
+      if x.recordFields.len != y.recordFields.len:
+        return false
+
+      for idx, field in x.recordFields:
+        if field != y.recordFields[idx]:
+          return false
+        if x.recordValues[idx] != y.recordValues[idx]:
+          return false
+      return true
+
     of crEdnQuotedCirru:
       return x.quotedVal == y.quotedVal
 
@@ -163,8 +193,19 @@ iterator items*(x: CirruEdnValue): CirruEdnValue =
     raise newException(EdnOpError, "data is not iterable as a sequence")
 
 iterator pairs*(x: CirruEdnValue): tuple[k: CirruEdnValue, v: CirruEdnValue] =
-  if x.kind != crEdnMap:
+  if x.kind == crEdnMap:
+    for k, v in x.mapVal:
+      yield (k, v)
+
+  elif x.kind == crEdnRecord:
+    for idx, field in x.recordFields:
+      let k = CirruEdnValue(kind: crEdnString, stringVal: field)
+      yield (k, x.recordValues[idx])
+
+  else:
     raise newException(EdnOpError, "data is not iterable as map")
 
-  for k, v in x.mapVal:
-    yield (k, v)
+type RecordInPair* = tuple[k: string, v: CirruEdnValue]
+
+proc recordFieldOrder*(a, b: RecordInPair): int =
+  cmp(a.k, b.k)
