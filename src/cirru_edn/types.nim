@@ -11,6 +11,7 @@ type
     crEdnBool,
     crEdnNumber,
     crEdnString,
+    crEdnSymbol,
     crEdnKeyword,
     crEdnVector,
     crEdnList,
@@ -27,6 +28,7 @@ type
     of crEdnBool: boolVal*: bool
     of crEdnNumber: numberVal*: float
     of crEdnString: stringVal*: string
+    of crEdnSymbol: symbolVal*: string
     of crEdnKeyword: keywordVal*: string
     of crEdnVector: vectorVal*: seq[CirruEdnValue]
     of crEdnList: listVal*: seq[CirruEdnValue]
@@ -58,6 +60,8 @@ proc hash*(value: CirruEdnValue): Hash =
       return hash("number:" & $value.numberVal)
     of crEdnString:
       return hash("string:" & value.stringVal)
+    of crEdnSymbol:
+      return hash("symbol:" & value.symbolVal)
     of crEdnNil:
       return hash("nil:")
     of crEdnBool:
@@ -114,6 +118,8 @@ proc `==`*(x, y: CirruEdnValue): bool =
       return x.boolVal == y.boolVal
     of crEdnString:
       return x.stringVal == y.stringVal
+    of crEdnSymbol:
+      return x.symbolVal == y.symbolVal
     of crEdnNumber:
       return x.numberVal == y.numberVal
     of crEdnKeyword:

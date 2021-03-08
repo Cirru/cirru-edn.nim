@@ -58,6 +58,7 @@ proc toString*(val: CirruEdnValue): string =
     of crEdnRecord: formRecordToString(val.recordName, val.recordFields, val.recordValues)
     of crEdnNil: "nil"
     of crEdnKeyword: ":" & val.keywordVal
+    of crEdnSymbol: "'" & val.keywordVal
     of crEdnQuotedCirru: $(val.quotedVal)
 
 proc `$`*(v: CirruEdnValue): string =

@@ -19,7 +19,7 @@ import cirru_edn/str_util
 export CirruEdnValue, CirruEdnKind, `$`, `==`, `!=`
 export EdnEmptyError, EdnInvalidError, EdnOpError
 export map, mapPairs, items, pairs, hash, get, contains, toJson, toCirruEdn
-export genCrEdn, genCrEdnKeyword, genCrEdnList, genCrEdnVector, genCrEdnSet, genCrEdnMap, genCrEdnRecord
+export genCrEdn, genCrEdnKeyword, genCrEdnList, genCrEdnVector, genCrEdnSet, genCrEdnMap, genCrEdnRecord, genCrEdnSymbol
 
 proc mapExpr(tree: CirruNode): CirruEdnValue =
 
@@ -41,6 +41,8 @@ proc mapExpr(tree: CirruNode): CirruEdnValue =
         return CirruEdnValue(kind: crEdnString, stringVal: tree.token[1..tree.token.high], line: tree.line, column: tree.column)
       elif tree.token[0] == '"':
         return CirruEdnValue(kind: crEdnString, stringVal: tree.token[1..tree.token.high], line: tree.line, column: tree.column)
+      elif tree.token[0] == '\'':
+        return CirruEdnValue(kind: crEdnSymbol, symbolVal: tree.token[1..tree.token.high], line: tree.line, column: tree.column)
       elif tree.token.matchesFloat():
         return CirruEdnValue(kind: crEdnNumber, numberVal: parseFloat(tree.token), line: tree.line, column: tree.column)
       else:
@@ -174,6 +176,9 @@ proc transformToWriter(xs: CirruEdnValue): CirruWriterNode =
       CirruWriterNode(kind: writerItem, item: n)
     of crEdnString:
       let str = "|" & xs.stringVal
+      CirruWriterNode(kind: writerItem, item: str)
+    of crEdnSymbol:
+      let str = "'" & xs.symbolVal
       CirruWriterNode(kind: writerItem, item: str)
     of crEdnKeyword:
       CirruWriterNode(kind: writerItem, item: ":" & $xs.keywordVal)

@@ -17,6 +17,7 @@ test "data gen":
   check genCrEdn(1) == CirruEdnValue(kind: crEdnNumber, numberVal: 1)
   check genCrEdn("a") == CirruEdnValue(kind: crEdnString, stringVal: "a")
   check genCrEdnKeyword("a") == CirruEdnValue(kind: crEdnKeyword, keywordVal: "a")
+  check genCrEdnSymbol("a") == CirruEdnValue(kind: crEdnSymbol, symbolVal: "a")
   check genCrEdnVector(genCrEdn(1)) == CirruEdnValue(kind: crEdnVector, vectorVal: @[ CirruEdnValue(kind: crEdnNumber, numberVal: 1) ])
   check genCrEdnVector(genCrEdnVector()) == CirruEdnValue(kind: crEdnVector, vectorVal: @[CirruEdnValue(kind: crEdnVector, vectorVal: @[])])
   check genCrEdnList(genCrEdn(1)) == CirruEdnValue(kind: crEdnList, listVal: @[ CirruEdnValue(kind: crEdnNumber, numberVal: 1) ])
@@ -34,6 +35,8 @@ test "parse literals":
   check parseCirruEdn("do |a") == genCrEdn("a")
   check parseCirruEdn("do \"\\\"a\"") == genCrEdn("a")
   check parseCirruEdn("do :k") == genCrEdnKeyword("k")
+
+  check parseCirruEdn("do 'a") == genCrEdnSymbol("a")
 
 test "parse vector":
   check parseCirruEdn("[]") == genCrEdnVector()
@@ -148,6 +151,7 @@ test "write":
   check formatToCirru(toCirruEdn(%* 1)).strip == "do 1"
   check formatToCirru(toCirruEdn(%* "a")).strip == "do |a"
   check formatToCirru(toCirruEdn(%* ":a")).strip == "do |:a"
+  check formatToCirru(genCrEdnList(CirruEdnValue(kind: crEdnSymbol, symbolVal: "a"))).strip == "list 'a"
 
   check parseCirruEdn(quotedExample).formatToCirru.strip == quotedExample.strip
 

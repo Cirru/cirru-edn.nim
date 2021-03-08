@@ -14,11 +14,14 @@ proc genCrEdn*(x: float): CirruEdnValue =
 proc genCrEdn*(x: bool): CirruEdnValue =
   CirruEdnValue(kind: crEdnBool, boolVal: x)
 
-proc genCrEdn*(x: string, asKeyword: bool = false): CirruEdnValue =
+proc genCrEdn*(x: string): CirruEdnValue =
   CirruEdnValue(kind: crEdnString, stringVal: x)
 
-proc genCrEdnKeyword*(x: string, asKeyword: bool = false): CirruEdnValue =
+proc genCrEdnKeyword*(x: string): CirruEdnValue =
   CirruEdnValue(kind: crEdnKeyword, keywordVal: x)
+
+proc genCrEdnSymbol*(x: string): CirruEdnValue =
+  CirruEdnValue(kind: crEdnSymbol, symbolVal: x)
 
 proc genCrEdn*(): CirruEdnValue =
   CirruEdnValue(kind: crEdnNil)

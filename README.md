@@ -7,7 +7,7 @@ Cirru EDN in Nim
 ### Usage
 
 ```nim
-requires "https://github.com/Cirru/cirru-edn.nim#v0.4.0"
+requires "https://github.com/Cirru/cirru-edn.nim#v0.4.8"
 ```
 
 ```nim
@@ -34,6 +34,7 @@ of crEdnBool: # ...
 of crEdnNumber: # ...
 of crEdnKeyword: # ...
 of crEdnString: # ...
+of crEdnSymbol: # ...
 of crEdnVector: # ...
 of crEdnList: # ...
 of crEdnMap: # ...
@@ -51,6 +52,7 @@ genCrEdn(true)
 genCrEdn(1)
 genCrEdn("a")
 genCrEdnKeyword("k")
+genCrEdnSymbol("s")
 genCrEdnList(genCrEdn(1), genCrEdn(1))
 genCrEdnVector(genCrEdn(1), genCrEdn(1))
 genCrEdnSet(genCrEdn(1), genCrEdn(2))
@@ -108,6 +110,10 @@ do :k
 
 ```cirru
 do nil
+```
+
+```cirru
+do 'sym
 ```
 
 - Strings, needs to be prefixed with a `|`(or a single escaped `"`):

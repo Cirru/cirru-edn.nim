@@ -58,6 +58,8 @@ proc toJson*(x: CirruEdnValue): JsonNode =
     return JsonNode(kind: JFloat, fnum: x.numberVal)
   of crEdnString:
     return JsonNode(kind: JString, str: x.stringVal)
+  of crEdnSymbol:
+    return JsonNode(kind: JString, str: x.symbolVal)
   of crEdnKeyword:
     return JsonNode(kind: JString, str: x.keywordVal)
   of crEdnList:
