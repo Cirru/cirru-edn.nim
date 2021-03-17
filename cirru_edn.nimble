@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.4.9"
+version       = "0.4.10"
 author        = "jiyinyiyong"
 description   = "Cirru EDN loader in Nim"
 license       = "MIT"

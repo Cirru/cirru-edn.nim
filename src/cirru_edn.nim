@@ -232,7 +232,7 @@ proc transformToWriter(xs: CirruEdnValue): CirruWriterNode =
 
 proc formatToCirru*(xs: CirruEdnValue, useInline: bool = false): string =
   case xs.kind
-  of crEdnNil, crEdnNumber, crEdnString, crEdnBool, crEdnKeyword:
+  of crEdnNil, crEdnNumber, crEdnString, crEdnBool, crEdnKeyword, crEdnSymbol:
     let writer0 = CirruWriterNode(kind: writerList, list: @[
       CirruWriterNode(kind: writerItem, item: "do"),
       xs.transformToWriter

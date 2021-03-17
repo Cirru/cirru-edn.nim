@@ -7,7 +7,7 @@ Cirru EDN in Nim
 ### Usage
 
 ```nim
-requires "cirru_edn >= 0.4.9"
+requires "cirru_edn >= 0.4.10"
 ```
 
 ```nim
