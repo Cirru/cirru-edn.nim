@@ -151,6 +151,7 @@ test "write":
   check formatToCirru(toCirruEdn(%* 1)).strip == "do 1"
   check formatToCirru(toCirruEdn(%* "a")).strip == "do |a"
   check formatToCirru(toCirruEdn(%* ":a")).strip == "do |:a"
+  check formatToCirru(genCrEdnSymbol("a")).strip == "do 'a"
   check formatToCirru(genCrEdnList(CirruEdnValue(kind: crEdnSymbol, symbolVal: "a"))).strip == "list 'a"
 
   check parseCirruEdn(quotedExample).formatToCirru.strip == quotedExample.strip
